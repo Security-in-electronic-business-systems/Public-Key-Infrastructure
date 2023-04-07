@@ -1,9 +1,8 @@
 package com.SIEBS.PublicKeyInfrastructure.model;
 
-import org.springframework.data.annotation.Id;
 
-import javax.persistence.*;
 
+import jakarta.persistence.*;
 
 @Entity
 @Table
