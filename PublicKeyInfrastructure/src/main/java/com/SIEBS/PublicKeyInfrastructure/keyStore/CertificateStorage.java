@@ -14,14 +14,19 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.springframework.stereotype.Component;
 
 import com.SIEBS.PublicKeyInfrastructure.config.KeyStoreConfig;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
 
+@Component
 public class CertificateStorage {
 
 	private  KeyStoreConfig config;
@@ -163,4 +168,26 @@ public class CertificateStorage {
         }
         return null;
     }
+
+	public List<X509Certificate> getAllValidIsuers() {
+		try {
+            Iterator<String> aliases = this.CAKeystore.aliases().asIterator();
+            List<X509Certificate> ALCert = new ArrayList<>();
+            while (aliases.hasNext()) {
+                Certificate cert = this.CAKeystore.getCertificate(aliases.next());
+                X509Certificate c = (X509Certificate)cert;
+                if (cert != null) {
+                	ALCert.add(c);
+                }
+                    
+            }
+            Certificate[] VCert = new Certificate[ALCert.size()];
+            return ALCert;
+        }
+        catch(KeyStoreException e) {
+            e.printStackTrace();
+            return null;
+        }
+		
+	}
 }

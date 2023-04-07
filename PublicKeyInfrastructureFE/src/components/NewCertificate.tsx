@@ -76,8 +76,10 @@ const NewCertificate = () => {
     event.preventDefault();
 
     var cerType;
-
-    if(certificateType === "Intermediate"){
+    if(certificateType === "Selfsigned"){
+      cerType = 0;
+    }
+    else if(certificateType === "Intermediate"){
       cerType = 1;
     }else{
       cerType = 2;

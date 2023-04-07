@@ -1,5 +1,7 @@
 package com.SIEBS.PublicKeyInfrastructure.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
+import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.service.CertificateService;
 
@@ -30,5 +33,8 @@ public class CertificateController {
         
     }
 
+	public List<IssuerInfoDTO> getAllValidIsuers(){
+		return this.certificateService.getAllValidIsuers();
+	}
 }
 

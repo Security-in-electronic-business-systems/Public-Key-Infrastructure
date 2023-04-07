@@ -6,7 +6,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -14,7 +16,9 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.stereotype.Service;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
+import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
+import com.SIEBS.PublicKeyInfrastructure.keyStore.CertificateStorage;
 import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
@@ -24,10 +28,11 @@ import com.SIEBS.PublicKeyInfrastructure.model.Subject;
 public class CertificateService {
 	
 	private final CertificateGenerator certificateGenerator;
+	private final CertificateStorage certificateStorage;
 	
-	
-	public CertificateService(CertificateGenerator certificateGenerator) {
+	public CertificateService(CertificateGenerator certificateGenerator, CertificateStorage storage) {
 		this.certificateGenerator = certificateGenerator;
+		this.certificateStorage = storage;
 	}
 	
 	public String generateAndSaveCertificate(CertificateRequestDTO certData) {
@@ -36,13 +41,21 @@ public class CertificateService {
 		Issuer issuer;
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
+			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
+			
+			this.certificateStorage.writeInCAKeyStore(cert);
 		}else {
 			//nabavljas issuera na osnovu serijskog broja iz baze
 			issuer = generateIssuer();
+			
+			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
+			
+			if(certData.getType() == CertificateType.INTERMEDIATE) {
+				this.certificateStorage.writeInCAKeyStore(cert);
+			}else {
+				this.certificateStorage.writeInEEKeyStore(cert);
+			}
 		}
-		
-		
-		CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
 		
 		return "";
 	}
@@ -89,5 +102,20 @@ public class CertificateService {
         }
         return null;
     }
+
+	public List<IssuerInfoDTO> getAllValidIsuers() {
+		List<X509Certificate> certificates = this.certificateStorage.getAllValidIsuers();
+		return getIssuerInfo(certificates);
+		
+	}
+	
+	private List<IssuerInfoDTO> getIssuerInfo(List<X509Certificate> l){
+		List<IssuerInfoDTO> retList = new ArrayList<IssuerInfoDTO>();
+		for(X509Certificate c : l) {
+			IssuerInfoDTO info = new IssuerInfoDTO(c.getSerialNumber().toString(), c.getSubjectX500Principal().getName());
+			retList.add(info);
+		}
+		return retList;
+	}
 
 }
