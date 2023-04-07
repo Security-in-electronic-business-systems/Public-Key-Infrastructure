@@ -28,5 +28,11 @@ public class CertificateController {
     public Certificate save(@RequestBody CertificateRequestDTO certificateRequestDTO) {
         return null;
     }
+	
+	@CrossOrigin(origins = "http://127.0.0.1:5173")
+	@PostMapping("/revokeCertificate")
+    public void revokeCertificate(@RequestBody String serialNumber) {
+    //    certificateService.revokeCertificate(serialNumber);
+    }
 
 }
