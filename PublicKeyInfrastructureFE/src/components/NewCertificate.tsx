@@ -8,13 +8,24 @@ const NewCertificate = () => {
   const [validTo, setValidTo] = useState("");
   const [cn, setCn] = useState("");
   const [on, setOn] = useState("");
+  const [o, setO] = useState("");
+  const [c, setC] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [isIssuerDisabled, setIsIssuerDisabled] = useState(false);
 
   const handleCertificateTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCertificateType(event.target.value);
+    const value = event.target.value;
+    setCertificateType(value);
+
+    if (value === 'Selfsigned') {
+      setIssuer('');
+      setIsIssuerDisabled(true); // onemogućava polje za odabir issuera kada se odabere "Selfsigned" sertifikat
+    } else {
+      setIsIssuerDisabled(false); // ponovo omogućava polje za odabir issuera kada se odabere neki drugi sertifikat
+    }
   };
 
   const handleIssuerChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -35,6 +46,14 @@ const NewCertificate = () => {
 
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOn(event.target.value);
+  };
+
+  const handleOChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setO(event.target.value);
+  };
+
+  const handleCChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setC(event.target.value);
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,19 +84,32 @@ const NewCertificate = () => {
     }
 
     //ovdje moras da namjestis serial number od issuera
-    const certificateData = new CertificateData(cerType, issuer, new Date(validFrom), new Date(validTo), cn, on, name, surname, phoneNumber, email);
+    const certificateData = new CertificateData(cerType, issuer, new Date(validFrom), new Date(validTo), cn, o, on, c, name, surname, phoneNumber, email);
 
-    await fetch("http://localhost:8081/api/certificate", {
+    await fetch("http://localhost:8081/api/certificate/save", {
       method: "POST",
       headers: {
         "Content-type": "application/json",
+        "Accept": "application/json",
+        'Access-Control-Allow-Origin': '*'
       },
-      credentials: "include",
       body: JSON.stringify({
-        certificateData
+        "type": cerType,
+        "issuer": issuer,
+        "validFrom": validFrom,
+        "validTo": validTo,
+        "cn": cn,
+        "o":o,
+        "on":on,
+        "c":c,
+        "name":name,
+        "surname":surname,
+        "phoneNumber":phoneNumber,
+        "email": email,
       }),
-    }).then(res => res.json())
-      .then(data => {})
+    }).then(res => {
+      console.log(res.text())
+    })
 
   };
 
@@ -87,11 +119,12 @@ const NewCertificate = () => {
         <label htmlFor="certificateType">Certificate Type*</label>
         <select id="certificateType" value={certificateType} onChange={handleCertificateTypeChange} required>
           <option value="">Select Certificate Type</option>
+          <option value="Selfsigned">Selfsigned</option>
           <option value="Intermediate">Intermediate</option>
           <option value="End entity">End Entity</option>
         </select>
       </div>
-      <div>
+      {!isIssuerDisabled && (<div>
         <label htmlFor="issuer">Issuer*</label>
         <select id="issuer" value={issuer} onChange={handleIssuerChange} required>
           <option value="">Select Issuer</option>
@@ -99,7 +132,8 @@ const NewCertificate = () => {
           <option value="Issuer B">Issuer B</option>
           <option value="Issuer C">Issuer C</option>
         </select>
-      </div>
+      </div>)}
+      
       <div>
         <label htmlFor="validFrom">Valid From*</label>
         <input type="date" id="validFrom" value={validFrom} onChange={handleValidFromChange} required />
@@ -113,24 +147,32 @@ const NewCertificate = () => {
         <input type="text" id="cn" value={cn} onChange={handleCnChange} required />
       </div>
       <div>
-        <label htmlFor="on">ON*</label>
-        <input type="text" id="on" value={on} onChange={handleOnChange} required />
+        <label htmlFor="on">O*</label>
+        <input type="text" id="o" value={o} onChange={handleOChange} required />
       </div>
       <div>
-        <label htmlFor="name">Name*</label>
-        <input type="text" id="name" value={name} onChange={handleNameChange} required />
+        <label htmlFor="on">ON</label>
+        <input type="text" id="on" value={on} onChange={handleOnChange} />
       </div>
       <div>
-        <label htmlFor="surname">Surname*</label>
-        <input type="text" id="surname" value={surname} onChange={handleSurnameChange} required />
+        <label htmlFor="on">C</label>
+        <input type="text" id="c" value={c} onChange={handleCChange} />
       </div>
       <div>
-        <label htmlFor="phoneNumber">Phone Number*</label>
-        <input type="text" id="phoneNumber" value={phoneNumber} onChange={handlePhoneNumberChange} required />
+        <label htmlFor="name">Name</label>
+        <input type="text" id="name" value={name} onChange={handleNameChange} />
       </div>
       <div>
-        <label htmlFor="email">Email*</label>
-        <input type="email" id="email" value={email} onChange={handleEmailChange} required />
+        <label htmlFor="surname">Surname</label>
+        <input type="text" id="surname" value={surname} onChange={handleSurnameChange} />
+      </div>
+      <div>
+        <label htmlFor="phoneNumber">Phone Number</label>
+        <input type="text" id="phoneNumber" value={phoneNumber} onChange={handlePhoneNumberChange} />
+      </div>
+      <div>
+        <label htmlFor="email">Email</label>
+        <input type="email" id="email" value={email} onChange={handleEmailChange} />
       </div>
       <button type="submit">Submit</button>
     </form>
