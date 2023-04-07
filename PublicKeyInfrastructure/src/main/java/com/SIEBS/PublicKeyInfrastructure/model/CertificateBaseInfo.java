@@ -2,24 +2,19 @@ package com.SIEBS.PublicKeyInfrastructure.model;
 
 
 
+import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table
 public class CertificateBaseInfo {
     @Id
-    @SequenceGenerator(
-            name = "bloodbank_sequence",
-            sequenceName = "bloodbank_sequence",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "bloodbank_sequence"
-    )
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private boolean revoked;
+    private String serialNumber;
 
     @Enumerated(EnumType.STRING)
     private CertificateType certificateType;
@@ -27,11 +22,19 @@ public class CertificateBaseInfo {
     public CertificateBaseInfo() {
     }
 
-	public CertificateBaseInfo(Long id, boolean revoked, CertificateType certificateType) {
+	public CertificateBaseInfo(boolean revoked, CertificateType certificateType, String sn) {
 		super();
-		this.id = id;
 		this.revoked = revoked;
 		this.certificateType = certificateType;
+		this.serialNumber = sn;
+	}
+
+	public String getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	public Long getId() {

@@ -181,7 +181,6 @@ public class CertificateStorage {
                 }
                     
             }
-            Certificate[] VCert = new Certificate[ALCert.size()];
             return ALCert;
         }
         catch(KeyStoreException e) {

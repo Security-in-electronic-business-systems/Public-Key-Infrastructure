@@ -20,6 +20,7 @@ import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
 import com.SIEBS.PublicKeyInfrastructure.keyStore.CertificateStorage;
 import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
+import com.SIEBS.PublicKeyInfrastructure.model.CertificateBaseInfo;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
 import com.SIEBS.PublicKeyInfrastructure.model.Subject;
@@ -47,6 +48,8 @@ public class CertificateService {
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
 			
 			this.certificateStorage.writeInCAKeyStore(cert);
+			CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.SELF_SIGNED, cert.getCertificateChain()[0].getSerialNumber().toString());
+			this.certificateBaseInfoRepository.save(certBaseInfo);
 			
 		}else {
 			//nabavljas issuera na osnovu serijskog broja iz baze
@@ -56,8 +59,12 @@ public class CertificateService {
 			
 			if(certData.getType() == CertificateType.INTERMEDIATE) {
 				this.certificateStorage.writeInCAKeyStore(cert);
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString());
+				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}else {
 				this.certificateStorage.writeInEEKeyStore(cert);
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.END_ENTITY, cert.getCertificateChain()[0].getSerialNumber().toString());
+				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}
 		}
 		
