@@ -23,16 +23,19 @@ import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
 import com.SIEBS.PublicKeyInfrastructure.model.Subject;
+import com.SIEBS.PublicKeyInfrastructure.repository.CertificateBaseInfoRepository;
 
 @Service
 public class CertificateService {
 	
 	private final CertificateGenerator certificateGenerator;
 	private final CertificateStorage certificateStorage;
+	private final CertificateBaseInfoRepository certificateBaseInfoRepository;
 	
-	public CertificateService(CertificateGenerator certificateGenerator, CertificateStorage storage) {
+	public CertificateService(CertificateGenerator certificateGenerator, CertificateStorage storage, CertificateBaseInfoRepository repo) {
 		this.certificateGenerator = certificateGenerator;
 		this.certificateStorage = storage;
+		this.certificateBaseInfoRepository = repo;
 	}
 	
 	public String generateAndSaveCertificate(CertificateRequestDTO certData) {
@@ -44,6 +47,7 @@ public class CertificateService {
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
 			
 			this.certificateStorage.writeInCAKeyStore(cert);
+			
 		}else {
 			//nabavljas issuera na osnovu serijskog broja iz baze
 			issuer = generateIssuer();
