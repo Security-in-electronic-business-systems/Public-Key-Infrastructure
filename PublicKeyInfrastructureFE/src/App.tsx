@@ -1,7 +1,15 @@
 import './App.css'
+import AppRouter from './router/AppRouter'
 
 function App() {
-  return <div>Hello world</div>
+  return (
+  <>
+    <div>
+      <AppRouter />
+    </div>
+  </>
+  )
+  
 }
 
 export default App
