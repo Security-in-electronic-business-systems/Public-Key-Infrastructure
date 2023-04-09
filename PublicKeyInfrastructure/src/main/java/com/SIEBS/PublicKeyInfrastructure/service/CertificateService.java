@@ -5,14 +5,22 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.stereotype.Service;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
@@ -127,6 +135,66 @@ public class CertificateService {
 			retList.add(info);
 		}
 		return retList;
+	}
+
+	public List<X509Certificate> getAll(){
+		var certificates = certificateBaseInfoRepository.findAll();
+		return findCertificates(certificates);
+	}
+
+	public List<X509Certificate> findCertificates(List<CertificateBaseInfo> certificates){
+		ArrayList<X509Certificate> foundCertificates = new ArrayList<>();
+
+		for (var certificate : certificates) {
+			X509Certificate x509certificate = (X509Certificate) certificateStorage
+					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			foundCertificates.add(x509certificate);
+		}
+		return foundCertificates;
+	}
+
+	public CertificateResponseDTO mapToDTO(X509Certificate x509) throws CertificateException {
+		CertificateResponseDTO dto = new CertificateResponseDTO();
+		dto.setIssuerCN(getIssuerCn(x509));
+		dto.setSubjectCN(getSubjectCn(x509));
+		dto.setCertificateType(x509.getType());
+		dto.setValidTo(x509.getNotAfter());
+		dto.setValidFrom(x509.getNotBefore());
+		dto.setSerialNumber(x509.getSerialNumber());
+		return dto;
+	}
+
+	public static String getIssuerCn(X509Certificate cert) throws CertificateException {
+		X509CertificateHolder certHolder = null;
+		try {
+			certHolder = new JcaX509CertificateHolder(cert);
+			X500Name issuer = certHolder.getIssuer();
+			return issuer.getRDNs(org.bouncycastle.asn1.x500.style.BCStyle.CN)[0].getFirst().getValue().toString();
+		} catch (CertificateEncodingException e) {
+			throw new CertificateException("Failed to get issuer CN", e);
+		}
+	}
+
+	public static String getSubjectCn(X509Certificate cert) throws CertificateEncodingException {
+		X509CertificateHolder certHolder = null;
+		try {
+			certHolder = new JcaX509CertificateHolder(cert);
+			X500Name subject = certHolder.getSubject();
+			return subject.getRDNs(org.bouncycastle.asn1.x500.style.BCStyle.CN)[0].getFirst().getValue().toString();
+		} catch (CertificateEncodingException e) {
+			throw new CertificateEncodingException("Failed to get subject CN", e);
+		}
+	}
+
+	public CertificateResponseDTO getBySerialNumber(String serialNum) throws CertificateException {
+		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		if (certificate != null){
+			X509Certificate x509certificate = (X509Certificate) certificateStorage
+					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			return mapToDTO(x509certificate);
+		}else{
+			return null;
+		}
 	}
 
 }

@@ -1,13 +1,13 @@
 package com.SIEBS.PublicKeyInfrastructure.controller;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
@@ -32,6 +32,24 @@ public class CertificateController {
         return certificateService.generateAndSaveCertificate(certificateRequestDTO);
         
     }
+	@CrossOrigin(origins = "*")
+	@GetMapping("/getAll")
+	public List<CertificateResponseDTO> getAll() throws CertificateException {
+		List<X509Certificate> X509list = certificateService.getAll();
+		List<CertificateResponseDTO> DTOlist = new ArrayList<>();
+ 		for (X509Certificate x509:X509list) {
+			var certificate = certificateService.mapToDTO(x509);
+			DTOlist.add(certificate);
+		}
+		 return DTOlist;
+	}
+
+	@CrossOrigin(origins = "*")
+	@PostMapping("/getBySerialNumber")
+	public CertificateResponseDTO getBySerialNumber(@RequestBody String jsonString) throws CertificateException {
+		int colonIndex = jsonString.indexOf(":");
+		return certificateService.getBySerialNumber(jsonString.substring(colonIndex + 2,jsonString.length() - 2));
+	}
 	
 	@CrossOrigin(origins = "http://127.0.0.1:5173")
 	@PostMapping("/revokeCertificate")
