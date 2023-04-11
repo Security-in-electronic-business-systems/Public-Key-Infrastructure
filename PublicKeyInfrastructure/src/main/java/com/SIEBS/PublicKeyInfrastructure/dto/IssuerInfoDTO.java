@@ -4,6 +4,7 @@ public class IssuerInfoDTO {
 
 	private String serialNumber;
 	private String commonName;
+	
 	public IssuerInfoDTO(String serialNumber, String commonName) {
 		super();
 		this.serialNumber = serialNumber;

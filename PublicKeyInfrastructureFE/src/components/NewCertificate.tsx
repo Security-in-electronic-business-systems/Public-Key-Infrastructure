@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { CertificateData } from "../model/CertificateData";
+import { useNavigate } from "react-router-dom";
+import { useCurrentCertificate } from "../hooks/getCurrentCertificate";
 
 const NewCertificate = () => {
   const [certificateType, setCertificateType] = useState("");
@@ -15,6 +16,10 @@ const NewCertificate = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [isIssuerDisabled, setIsIssuerDisabled] = useState(false);
+
+  const certificate = useCurrentCertificate();
+
+  const navigate = useNavigate();
 
   const handleCertificateTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
@@ -86,7 +91,7 @@ const NewCertificate = () => {
     }
 
     //ovdje moras da namjestis serial number od issuera
-    const certificateData = new CertificateData(cerType, issuer, new Date(validFrom), new Date(validTo), cn, o, on, c, name, surname, phoneNumber, email);
+    
 
     await fetch("http://localhost:8081/api/certificate/save", {
       method: "POST",
@@ -97,7 +102,7 @@ const NewCertificate = () => {
       },
       body: JSON.stringify({
         "type": cerType,
-        "issuer": issuer,
+        "issuer": certificate?.serialNumber,
         "validFrom": validFrom,
         "validTo": validTo,
         "cn": cn,
@@ -111,6 +116,9 @@ const NewCertificate = () => {
       }),
     }).then(res => {
       console.log(res.text())
+      if(certificate?.certificateType == "SELF_SIGNED"){
+        navigate("/viewAll")
+      }
     })
 
   };
@@ -121,21 +129,11 @@ const NewCertificate = () => {
         <label htmlFor="certificateType">Certificate Type*</label>
         <select id="certificateType" value={certificateType} onChange={handleCertificateTypeChange} required>
           <option value="">Select Certificate Type</option>
-          <option value="Selfsigned">Selfsigned</option>
+          {certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
           <option value="Intermediate">Intermediate</option>
           <option value="End entity">End Entity</option>
         </select>
-      </div>
-      {!isIssuerDisabled && (<div>
-        <label htmlFor="issuer">Issuer*</label>
-        <select id="issuer" value={issuer} onChange={handleIssuerChange} required>
-          <option value="">Select Issuer</option>
-          <option value="Issuer A">Issuer A</option>
-          <option value="Issuer B">Issuer B</option>
-          <option value="Issuer C">Issuer C</option>
-        </select>
-      </div>)}
-      
+      </div>      
       <div>
         <label htmlFor="validFrom">Valid From*</label>
         <input type="date" id="validFrom" value={validFrom} onChange={handleValidFromChange} required />
