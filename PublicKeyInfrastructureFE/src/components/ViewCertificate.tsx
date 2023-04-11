@@ -46,6 +46,34 @@ function ViewCertificate() {
     setLoading(false);
   };
 
+  const downloadCertificate = async () => {
+    try {
+      const response = await fetch(`http://localhost:8081/api/certificate/download/${certificate?.serialNumber}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        responseType: 'blob',
+      } as RequestInit & { responseType: 'blob' });
+  
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${certificate?.serialNumber}.cer`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      } else {
+        setError(`HTTP error: ${response.status}`);
+      }
+    } catch (error) {
+      setError(`Error: ${error}`);
+    }
+  };
+
+
   return (
     <div>
       <h1>View Certificate</h1>
@@ -102,6 +130,8 @@ function ViewCertificate() {
             <label htmlFor="validTo">Valid To:</label>
             <span id="validTo">{new Date(certificate.validTo).toLocaleDateString()}</span>
           </div>
+
+          <button id="download-btn" onClick={downloadCertificate}>Download Certificate</button>
         </div>
       )}
     </div>
