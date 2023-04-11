@@ -1,12 +1,17 @@
 package com.SIEBS.PublicKeyInfrastructure.service;
 
+import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,19 +25,21 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Service;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
 import com.SIEBS.PublicKeyInfrastructure.keyStore.CertificateStorage;
-import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateBaseInfo;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
 import com.SIEBS.PublicKeyInfrastructure.model.Subject;
 import com.SIEBS.PublicKeyInfrastructure.repository.CertificateBaseInfoRepository;
+
 
 @Service
 public class CertificateService {
@@ -51,12 +58,13 @@ public class CertificateService {
 		KeyPair keyPairSubject = generateKeyPair();
 		Subject subject = generateSubject(certData, keyPairSubject);
 		Issuer issuer;
+		String hierarchyChain = Long.toHexString(certificateBaseInfoRepository.count());
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
 			
 			this.certificateStorage.writeInCAKeyStore(cert);
-			CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.SELF_SIGNED, cert.getCertificateChain()[0].getSerialNumber().toString());
+			CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.SELF_SIGNED, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 			this.certificateBaseInfoRepository.save(certBaseInfo);
 			
 		}else {
@@ -64,14 +72,14 @@ public class CertificateService {
 			issuer = generateIssuer();
 			
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
-			
+			hierarchyChain += "+" ;
 			if(certData.getType() == CertificateType.INTERMEDIATE) {
 				this.certificateStorage.writeInCAKeyStore(cert);
-				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString());
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}else {
 				this.certificateStorage.writeInEEKeyStore(cert);
-				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.END_ENTITY, cert.getCertificateChain()[0].getSerialNumber().toString());
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.END_ENTITY, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}
 		}
@@ -196,5 +204,41 @@ public class CertificateService {
 			return null;
 		}
 	}
+	
+	public boolean validate (String serialNum) {
+		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		boolean valid = true;
+		if (certificate != null){
+			// da li je sertifikat povucen
+			if (certificate.isRevoked()) {
+				valid = false;
+			}
+			
+			X509Certificate x509certificate = (X509Certificate) certificateStorage
+					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			
+			// provera da li je istekao sertifikat ili da li jos uvek nije validan
+			 try {
+				 x509certificate.checkValidity();
+		        } catch (CertificateExpiredException e) {
+		        	valid = false;
+		        } catch (CertificateNotYetValidException e) {
+		        	valid = false;
+		        }
 
+			 			 			 
+		} else {
+			valid = false;
+		}
+		return valid;		
+	}
+	
+	public void revoke (String serialNum) {
+		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		certificate.setRevoked(true);
+		certificateBaseInfoRepository.save(certificate);
+        List<CertificateBaseInfo> childCerts = certificateBaseInfoRepository.findByChainIdLike(certificate.getHierarchyChain());
+        for (var child : childCerts) child.setRevoked(true);
+		
+	}
 }

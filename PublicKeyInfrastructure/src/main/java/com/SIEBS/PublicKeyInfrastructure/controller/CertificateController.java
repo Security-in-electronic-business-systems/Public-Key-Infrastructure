@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
-import org.springframework.stereotype.Service;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
-import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.service.CertificateService;
 
 @CrossOrigin(origins = "*")
@@ -51,11 +51,26 @@ public class CertificateController {
 		return certificateService.getBySerialNumber(jsonString.substring(colonIndex + 2,jsonString.length() - 2));
 	}
 	
-	@CrossOrigin(origins = "http://127.0.0.1:5173")
+	@CrossOrigin(origins = "*")
 	@PostMapping("/revokeCertificate")
     public void revokeCertificate(@RequestBody String serialNumber) {
     //    certificateService.revokeCertificate(serialNumber);
     }
+	
+	@CrossOrigin(origins = "*")
+	@GetMapping("/validate/{serialNumber}")
+	public ResponseEntity<String> validate(@PathVariable String serialNumber) {
+		String response = "";
+		if (certificateService.validate(serialNumber))	
+			response = "Validation successful for certificate with serial number " + serialNumber;
+	    return ResponseEntity.ok(response);
+	}
+	
+	@CrossOrigin(origins = "*")
+	@PutMapping("/revoke/{serialNumber}")
+	public void revoke(@PathVariable String serialNumber) {		
+		certificateService.revoke(serialNumber);
+	}
 
 	public List<IssuerInfoDTO> getAllValidIsuers(){
 		return this.certificateService.getAllValidIsuers();

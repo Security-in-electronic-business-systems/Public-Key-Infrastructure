@@ -23,4 +23,41 @@ public class CertificateResponseDTO {
     //private boolean revoked;
     private Date validFrom;
     private Date validTo;
+	public BigInteger getSerialNumber() {
+		return serialNumber;
+	}
+	public void setSerialNumber(BigInteger serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+	public String getIssuerCN() {
+		return issuerCN;
+	}
+	public void setIssuerCN(String issuerCN) {
+		this.issuerCN = issuerCN;
+	}
+	public String getSubjectCN() {
+		return subjectCN;
+	}
+	public void setSubjectCN(String subjectCN) {
+		this.subjectCN = subjectCN;
+	}
+	public String getCertificateType() {
+		return certificateType;
+	}
+	public void setCertificateType(String certificateType) {
+		this.certificateType = certificateType;
+	}
+	public Date getValidFrom() {
+		return validFrom;
+	}
+	public void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
+	}
+	public Date getValidTo() {
+		return validTo;
+	}
+	public void setValidTo(Date validTo) {
+		this.validTo = validTo;
+	}
+    
 }
