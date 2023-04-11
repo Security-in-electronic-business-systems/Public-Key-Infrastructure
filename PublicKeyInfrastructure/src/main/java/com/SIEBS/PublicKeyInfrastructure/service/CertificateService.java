@@ -15,7 +15,6 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -24,6 +23,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.stereotype.Service;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
+import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
 import com.SIEBS.PublicKeyInfrastructure.keyStore.CertificateStorage;
@@ -60,8 +60,8 @@ public class CertificateService {
 			this.certificateBaseInfoRepository.save(certBaseInfo);
 			
 		}else {
-			//nabavljas issuera na osnovu serijskog broja iz baze
-			issuer = generateIssuer();
+			//nabavljas issuera na osnovu serijskog broja iz key stora
+			issuer = certificateStorage.readIssuerFromStore(certData.getIssuer());
 			
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
 			
@@ -163,6 +163,17 @@ public class CertificateService {
 		dto.setSerialNumber(x509.getSerialNumber());
 		return dto;
 	}
+	
+	private CertificateResponseDTO mapToDTOWithType(X509Certificate x509, CertificateType type) throws CertificateException {
+		CertificateResponseDTO dto = new CertificateResponseDTO();
+		dto.setIssuerCN(getIssuerCn(x509));
+		dto.setSubjectCN(getSubjectCn(x509));
+		dto.setCertificateType(type.toString());
+		dto.setValidTo(x509.getNotAfter());
+		dto.setValidFrom(x509.getNotBefore());
+		dto.setSerialNumber(x509.getSerialNumber());
+		return dto;
+	}
 
 	public static String getIssuerCn(X509Certificate cert) throws CertificateException {
 		X509CertificateHolder certHolder = null;
@@ -191,7 +202,7 @@ public class CertificateService {
 		if (certificate != null){
 			X509Certificate x509certificate = (X509Certificate) certificateStorage
 					.readCertificateFromKeyStore(certificate.getSerialNumber());
-			return mapToDTO(x509certificate);
+			return mapToDTOWithType(x509certificate, certificate.getCertificateType());
 		}else{
 			return null;
 		}

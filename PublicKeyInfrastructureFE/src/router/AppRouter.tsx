@@ -4,11 +4,13 @@ import NewCertificate from "../components/NewCertificate";
 import RevokeCertificate from "../components/RevokeCertificate";
 import ViewAllCertificates from "../components/ViewAllCerificates";
 import ViewCertificate from "../components/ViewCertificate";
+import Login from "../components/Login";
 
 const AppRouter: React.FC = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/newSertificate" element={<NewCertificate />} />
         <Route path="/revokeCertificate" element={<RevokeCertificate />} />
         <Route path="/viewAll" element={<ViewAllCertificates />} />
