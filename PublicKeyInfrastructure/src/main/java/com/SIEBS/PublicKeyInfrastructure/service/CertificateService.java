@@ -189,12 +189,17 @@ public class CertificateService {
 	public CertificateResponseDTO getBySerialNumber(String serialNum) throws CertificateException {
 		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
 		if (certificate != null){
-			X509Certificate x509certificate = (X509Certificate) certificateStorage
-					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			X509Certificate x509certificate = getX509BySerialNumber(serialNum);
 			return mapToDTO(x509certificate);
 		}else{
 			return null;
 		}
+	}
+
+	public X509Certificate getX509BySerialNumber(String serialNum){
+		X509Certificate x509certificate = (X509Certificate) certificateStorage
+				.readCertificateFromKeyStore(serialNum);
+		return x509certificate;
 	}
 
 }
