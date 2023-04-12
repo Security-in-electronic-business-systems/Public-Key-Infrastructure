@@ -63,8 +63,8 @@ public class CertificateService {
 		KeyPair keyPairSubject = generateKeyPair();
 		Subject subject = generateSubject(certData, keyPairSubject);
 		Issuer issuer;
+		System.out.println("kkkkkkkkkkkkkkkkkkkkkk");
 		List<org.bouncycastle.asn1.x509.Extension> extensions = findExtensionsFromRequest(certData);
-		
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo(), extensions);
@@ -231,78 +231,83 @@ public class CertificateService {
 	
 	public List<org.bouncycastle.asn1.x509.Extension> findExtensionsFromRequest(CertificateRequestDTO certificateRequestDTO) throws IOException{
 		List<org.bouncycastle.asn1.x509.Extension> extensions = new ArrayList<>();
+		List<KeyPurposeId> extendedKeyUsageIds = new ArrayList<>();
+		
 		System.out.println("CONVERT EXTENSION STARTED...");
-		System.out.println("***********" + certificateRequestDTO.isClientAuth());
 		if(certificateRequestDTO.isClientAuth() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.CLIENT_AUTH.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.CLIENT_AUTH.getKeyPurposeId());
 		}
 		if(certificateRequestDTO.isServerAuth() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.SERVER_AUTH.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.SERVER_AUTH.getKeyPurposeId());
 		}
 		if(certificateRequestDTO.isCodeSign() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.CODE_SIGNING.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.CODE_SIGNING.getKeyPurposeId());
 		}
 		if(certificateRequestDTO.isEmailProtection() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.EMAIL_PROTECTION.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.EMAIL_PROTECTION.getKeyPurposeId());
 		}
 		if(certificateRequestDTO.isTimeStamping() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.TIME_STAMPING.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.TIME_STAMPING.getKeyPurposeId());
 		}
 		if(certificateRequestDTO.isOcspSigning() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toExtendedExtension(ExtendedKeyPurpose.OCSP_SIGNING.getKeyPurposeId());
-			extensions.add(extension);
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.OCSP_SIGNING.getKeyPurposeId());
 		}
+		
+		
+		List<Integer> keyUsageIds = new ArrayList<>();
+		
 		if(certificateRequestDTO.isDigitalSignature() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.DIGITAL_SIGNATURE.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.DIGITAL_SIGNATURE.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isNonRepudiation() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.NON_REPUDIATION.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.NON_REPUDIATION.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isKeyEnciphement() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.KEY_ENCIPHERMENT.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.KEY_ENCIPHERMENT.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isDataEnciphement() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.DATA_ENCIPHERMENT.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.DATA_ENCIPHERMENT.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isKeyAgriment() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.KEY_AGREEMENT.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.KEY_AGREEMENT.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isKeyCertSign() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.KEY_CERT_SIGN.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.KEY_CERT_SIGN.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isEnhipterOnly() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.ENCIPHER_ONLY.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.ENCIPHER_ONLY.getKeyUsageId());
 		}
 		if(certificateRequestDTO.isDecipherOnly() == true){
-			org.bouncycastle.asn1.x509.Extension extension = toKeyPurposeExtension(KeyPurpose.DECIPHER_ONLY.getKeyUsageId());
-			extensions.add(extension);
+			keyUsageIds.add(KeyPurpose.DECIPHER_ONLY.getKeyUsageId());
 		}
-		if(extensions.isEmpty() == true) {
+		if(extendedKeyUsageIds.isEmpty() && keyUsageIds.isEmpty()) {
 			return null;
 		}
-		System.out.println("EXTENSION CONVERTED!!!");
+		
+		if (extendedKeyUsageIds.isEmpty()==false) {
+			org.bouncycastle.asn1.x509.Extension extendedExtension = new org.bouncycastle.asn1.x509.Extension(
+					org.bouncycastle.asn1.x509.Extension.extendedKeyUsage, 
+					false, 
+					new DEROctetString(new ExtendedKeyUsage(extendedKeyUsageIds.toArray(new KeyPurposeId[extendedKeyUsageIds.size()]))));
+			extensions.add(extendedExtension);
+		}
+		
+		if (!keyUsageIds.isEmpty()) {
+		    int usage = 0;
+		    for (Integer id : keyUsageIds) {
+		        usage |= id;
+		    }
+		    org.bouncycastle.asn1.x509.Extension keyUsageExtension = new org.bouncycastle.asn1.x509.Extension(
+		            org.bouncycastle.asn1.x509.Extension.keyUsage, 
+		            true, 
+		            new DEROctetString(new KeyUsage(usage)));
+		    extensions.add(keyUsageExtension);
+		}
+
 		return extensions;
 	}
 	
-	public org.bouncycastle.asn1.x509.Extension toExtendedExtension(KeyPurposeId extId ) throws IOException {
-		return new org.bouncycastle.asn1.x509.Extension( org.bouncycastle.asn1.x509.Extension.extendedKeyUsage, false, new DEROctetString(new ExtendedKeyUsage(extId)));
-	}
 	
-	public org.bouncycastle.asn1.x509.Extension toKeyPurposeExtension(int extId ) throws IOException {
-		return new org.bouncycastle.asn1.x509.Extension( org.bouncycastle.asn1.x509.Extension.keyUsage, false, new DEROctetString(new KeyUsage(extId)));
-	}
 	
 	
 }
