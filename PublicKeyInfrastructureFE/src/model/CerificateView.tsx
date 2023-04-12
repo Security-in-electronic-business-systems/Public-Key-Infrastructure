@@ -3,8 +3,8 @@ class Certificate {
     public issuerCN: string;
     public subjectCN: string;
     public certificateType: string;
-    public validFrom: Date;
-    public validTo: Date;
+    public validFrom: Date = new Date();
+    public validTo: Date = new Date();
     public extendedKeyUsage: String[] = [];
     public keyUsage: boolean[]=[];
   

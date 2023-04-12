@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentCertificate } from "../hooks/getCurrentCertificate";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,7 +16,9 @@ const NewCertificate = () => {
   const [surname, setSurname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [validityMessage, setValidityMessage] = useState('');
   const [isIssuerDisabled, setIsIssuerDisabled] = useState(false);
+  const [error, setError] = useState('');
 
   const [SERVER_AUTH, setSERVER_AUTH] = useState(false);
   const [CLIENT_AUTH, setCLIENT_AUTH] = useState(false);
@@ -36,13 +38,16 @@ const NewCertificate = () => {
 
   const [criticalExtended, setcriticalExtended] = useState(false);
   const [critical, setcritical] = useState(false);
+
+  const [minString, setMinString] = useState("");
+  const [maxString, setMaxString] = useState("");
   
-
-
-
   const certificate = useCurrentCertificate();
   const extendesKeysUsage = certificate?.extendedKeyUsage;
   const keysUsage = certificate?.keyUsage;
+
+  var min = new Date();
+  var max = new Date();
   
   console.log("Extended key usage: "+certificate?.extendedKeyUsage);
   console.log("Key usage: "+certificate?.keyUsage);
@@ -51,6 +56,8 @@ const NewCertificate = () => {
 
   const handleCertificateTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
+
+    
     setCertificateType(value);
 
     if (value === 'Selfsigned') {
@@ -173,7 +180,6 @@ const NewCertificate = () => {
     console.log(event.target.checked);
   };
 
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -188,59 +194,98 @@ const NewCertificate = () => {
     }
 
     //ovdje moras da namjestis serial number od issuera
+
+    //validacija datuma
+    min = certificate?.validFrom ? certificate?.validFrom : new Date();
+    const minString = (new Date(min).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).split('/').reverse().join('-'))
+    const from = certificate?.validFrom ? new Date(certificate?.validFrom) : new Date();
+    const to = certificate?.validTo ? new Date(certificate?.validTo) : new Date();
     
+    max = new Date((from?.getTime() + to?.getTime()) / 2);
 
-    await fetch("http://localhost:8081/api/certificate/save", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-        "Accept": "application/json",
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({
-        "type": cerType,
-        "issuer": certificate?.serialNumber,
-        "validFrom": validFrom,
-        "validTo": validTo,
-        "cn": cn,
-        "o":o,
-        "on":on,
-        "c":c,
-        "name":name,
-        "surname":surname,
-        "phoneNumber":phoneNumber,
-        "email": email,
-        "serverAuth": SERVER_AUTH,
-        "clientAuth": CLIENT_AUTH,
-        "codeSign": CODE_SIGNING,
-        "emailProtection": EMAIL_PROTECTION,
-        "timeStamping": TIME_STAMPING,
-        "ocspSigning": OCSP_SIGNING,
-        "digitalSignature": DIGITAL_SIGNATURE,
-        "nonRepudiation": NON_REPUDIATION,
-        "keyEnciphement": KEY_ENCIPHERMENT,
-        "dataEnciphement": DATA_ENCIPHERMENT,
-        "keyAgriment": KEY_AGREEMENT,
-        "keyCertSign": KEY_CERT_SIGN,
-        "enhipterOnly": ENCIPHER_ONLY,
-        "decipherOnly": DECIPHER_ONLY,
-        "criticalExtended": criticalExtended,
-        "critical": critical,
-      }),
-    }).then(res => {
-      console.log(res.text())
-      if(certificate?.certificateType == "SELF_SIGNED"){
-        navigate("/viewAll")
+    const maxString = (new Date(max).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).split('/').reverse().join('-'))
+
+    const date1 = validFrom;
+    const date2 = new Date(min); 
+    const date1Obj = new Date(date1);
+
+    if (date2 > date1Obj || date1Obj > max){
+      setError(`Choose date between ${minString} and ${maxString}`);
+    }else{
+      setError("");
+      const from = certificate?.validFrom ? new Date(certificate?.validFrom) : new Date();
+      const to = certificate?.validTo ? new Date(certificate?.validTo) : new Date();
+
+      const parentDuration = to.getTime() - from.getTime();
+      const childDuration = new Date(validTo).getTime() - new Date(validFrom).getTime();
+
+      if (childDuration > parentDuration/2){
+        setValidityMessage(`Maximum period of validity is ${parentDuration/2/86400000} days`);
+      }else{
+        setValidityMessage("");
+        await fetch("http://localhost:8081/api/certificate/save", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            "Accept": "application/json",
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            "type": cerType,
+            "issuer": certificate?.serialNumber,
+            "validFrom": validFrom,
+            "validTo": validTo,
+            "cn": cn,
+            "o":o,
+            "on":on,
+            "c":c,
+            "name":name,
+            "surname":surname,
+            "phoneNumber":phoneNumber,
+            "email": email,
+            "serverAuth": SERVER_AUTH,
+            "clientAuth": CLIENT_AUTH,
+            "codeSign": CODE_SIGNING,
+            "emailProtection": EMAIL_PROTECTION,
+            "timeStamping": TIME_STAMPING,
+            "ocspSigning": OCSP_SIGNING,
+            "digitalSignature": DIGITAL_SIGNATURE,
+            "nonRepudiation": NON_REPUDIATION,
+            "keyEnciphement": KEY_ENCIPHERMENT,
+            "dataEnciphement": DATA_ENCIPHERMENT,
+            "keyAgriment": KEY_AGREEMENT,
+            "keyCertSign": KEY_CERT_SIGN,
+            "enhipterOnly": ENCIPHER_ONLY,
+            "decipherOnly": DECIPHER_ONLY,
+            "criticalExtended": criticalExtended,
+            "critical": critical,
+            }),
+          }).then(res => {
+            console.log(res.text())
+            if(certificate?.certificateType == "SELF_SIGNED"){
+              navigate("/viewAll")
+            }
+          })
       }
-    })
+    };
+  }
 
-  };
-
+      
+  //VRATI!
+  //{certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
   return (
     <form onSubmit={handleSubmit} className="form-group">
       <div>
         <label htmlFor="certificateType">Certificate Type*</label>
-        <select id="certificateType" className="form-select" value={certificateType} onChange={handleCertificateTypeChange} required>
+        <select id="certificateType" className="form-select" value={certificateType} onChange={(e) => handleCertificateTypeChange(e)} required>
           <option value="">Select Certificate Type</option>
           {certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
           <option value="Intermediate">Intermediate</option>
@@ -379,11 +424,13 @@ const NewCertificate = () => {
             <td>
             <div>
         <label htmlFor="validFrom">Valid From*</label>
-        <input type="date" id="validFrom" className="form-control" value={validFrom} onChange={handleValidFromChange} required />
+        <input type="date" id="validFrom" className="form-control" value={validFrom} onChange={handleValidFromChange}  required />
+        {error && <span style={{ color: 'red' }}> - {error}</span>}
       </div>
       <div>
         <label htmlFor="validTo">Valid To*</label>
         <input type="date" className="form-control" id="validTo" value={validTo} onChange={handleValidToChange} required />
+        {validityMessage && <span style={{ color: 'red' }}> - {validityMessage}</span>}
       </div>
       <div>
         <label htmlFor="cn">CN*</label>
