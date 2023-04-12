@@ -233,7 +233,7 @@ public class CertificateService {
 					.readCertificateFromKeyStore(certificate.getSerialNumber());
 			return mapToDTOWithType(x509certificate, certificate.getCertificateType());
 		}else{
-			return null;
+			return new CertificateResponseDTO();
 		}
 	}
 	

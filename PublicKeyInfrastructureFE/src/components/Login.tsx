@@ -16,17 +16,36 @@ const Login = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ serialNumber })
-      }).then(res => res.json())
-        .then(data => {
-      
-            var cert: Certificate = data
-            localStorage.setItem('currentCertificate', JSON.stringify(cert));
+      }).then(res => res.json()
+         
+      ).then(data => {
 
-            if(cert.certificateType == "SELF_SIGNED" || cert.certificateType =="INTERMEDIATE"){
-              navigate("/newSertificate")
+            if(data.issuerCN === null){
+              alert("Serial number does not exist!")
             }else{
-              navigate("/viewCertificate")
+              var cert: Certificate = data
+
+              fetch(`http://localhost:8081/api/certificate/validate/${serialNumber}`)
+                .then((response) => response.text())
+                .then((data) =>{
+                  if(data == "Validation faild"){
+                    alert("Certificate with that serial number is not valid!")
+
+                  }else{
+                    localStorage.setItem('currentCertificate', JSON.stringify(cert));
+
+                    if(cert.certificateType == "SELF_SIGNED" || cert.certificateType =="INTERMEDIATE"){
+                      navigate("/newSertificate")
+                    }else{
+                      navigate("/viewCertificate")
+                    }
+                  }
+                });
+
+              
             }
+
+            
 
             
           })

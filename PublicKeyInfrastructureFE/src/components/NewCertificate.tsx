@@ -235,7 +235,8 @@ const NewCertificate = () => {
     })
 
   };
-
+  //{certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
+  console.log(certificateType)
   return (
     <form onSubmit={handleSubmit} className="form-group">
       <div>
@@ -298,14 +299,14 @@ const NewCertificate = () => {
     <div>
         <table>
         <tr>
-          { keysUsage&& keysUsage[0] &&
+          { ((keysUsage&& keysUsage[0]) || certificateType == "Selfsigned") &&
             <div>
                <td><input type="checkbox" className="form-check-input" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
                 <td><label htmlFor="validFrom">Digutal signature</label></td>
             </div>
           }
           {
-            keysUsage&&keysUsage[1]&&
+            ((keysUsage&& keysUsage[1]) || certificateType == "Selfsigned") &&
             <div>
               <td><input type="checkbox" className="form-check-input" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
               <td><label htmlFor="validFrom">Non repudiation</label></td>
@@ -313,14 +314,14 @@ const NewCertificate = () => {
           }
         </tr>
         <tr>
-          {keysUsage&&keysUsage[2]&&
+          {((keysUsage&& keysUsage[2]) || certificateType == "Selfsigned") &&
           <div>
             <td><input type="checkbox" className="form-check-input" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
             <td><label htmlFor="validFrom">Key encipherment</label></td>
           </div>
           }
          {
-          keysUsage&&keysUsage[3]&&
+          ((keysUsage&& keysUsage[3]) || certificateType == "Selfsigned") &&
           <div>
             <td><input type="checkbox" className="form-check-input" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
             <td><label htmlFor="validFrom">Data encipherment</label></td>
@@ -329,14 +330,14 @@ const NewCertificate = () => {
         </tr>
         <tr>
           {
-            keysUsage&&keysUsage[4]&&
+            ((keysUsage&& keysUsage[4]) || certificateType == "Selfsigned") &&
             <div>
              <td><input type="checkbox" className="form-check-input" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
              <td><label htmlFor="validFrom">Key agreement</label></td>
             </div>
           }
           {
-            keysUsage&&keysUsage[5]&&
+            ((keysUsage&& keysUsage[5]) || certificateType == "Selfsigned") &&
             <div>
               <td><input type="checkbox" className="form-check-input" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
               <td><label htmlFor="validFrom">Key cert sign</label></td>
@@ -345,14 +346,14 @@ const NewCertificate = () => {
         </tr>
         <tr>
           {
-            keysUsage&&keysUsage[7]&&
+            ((keysUsage&& keysUsage[7]) || certificateType == "Selfsigned") &&
             <div>
               <td><input type="checkbox" className="form-check-input" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
               <td><label htmlFor="validFrom">Encipher only</label></td>
             </div>
           }
           
-          {keysUsage&&keysUsage[8]&&
+          {((keysUsage&& keysUsage[8]) || certificateType == "Selfsigned") &&
           <div>
             <td><input type="checkbox" className="form-check-input" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
             <td><label htmlFor="validFrom">Decipher only</label></td>
