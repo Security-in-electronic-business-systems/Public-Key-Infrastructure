@@ -116,7 +116,7 @@ public class CertificateStorage {
     public Issuer readIssuerFromStore(String alias) {
         try {
             //Iscitava se sertifikat koji ima dati alias
-            Certificate cert = this.CAKeystore.getCertificate(alias);
+            Certificate cert = this.CAKeystore.getCertificate(alias);          
 
             //Iscitava se privatni kljuc vezan za javni kljuc koji se nalazi na sertifikatu sa datim aliasom
             
@@ -188,5 +188,15 @@ public class CertificateStorage {
             return null;
         }
 		
+	}
+	
+	public X509Certificate getIssuer(X509Certificate cert) {
+		List<X509Certificate> certificates = getAllValidIsuers();
+		for (X509Certificate c: certificates) {
+			if (cert.getIssuerX500Principal().toString().equals(c.getSubjectX500Principal().toString())) {
+				return c;
+			}
+		}
+		return null;
 	}
 }
