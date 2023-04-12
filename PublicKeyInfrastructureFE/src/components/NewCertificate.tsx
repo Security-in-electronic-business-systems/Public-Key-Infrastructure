@@ -17,7 +17,34 @@ const NewCertificate = () => {
   const [email, setEmail] = useState("");
   const [isIssuerDisabled, setIsIssuerDisabled] = useState(false);
 
+  const [SERVER_AUTH, setSERVER_AUTH] = useState(false);
+  const [CLIENT_AUTH, setCLIENT_AUTH] = useState(false);
+  const [CODE_SIGNING, setCODE_SIGNING] = useState(false);
+  const [EMAIL_PROTECTION, setEMAIL_PROTECTION] = useState(false);
+  const [TIME_STAMPING, setTIME_STAMPING] = useState(false);
+  const [OCSP_SIGNING, setOCSP_SIGNING] = useState(false);
+
+  const [DIGITAL_SIGNATURE, setDIGITAL_SIGNATURE] = useState(false);
+  const [NON_REPUDIATION, setNON_REPUDIATION] = useState(false);
+  const [KEY_ENCIPHERMENT, setKEY_ENCIPHERMENT] = useState(false);
+  const [DATA_ENCIPHERMENT, setDATA_ENCIPHERMENT] = useState(false);
+  const [KEY_AGREEMENT, setKEY_AGREEMENT] = useState(false);
+  const [KEY_CERT_SIGN, setKEY_CERT_SIGN] = useState(false);
+  const [ENCIPHER_ONLY, setENCIPHER_ONLY] = useState(false);
+  const [DECIPHER_ONLY, setDECIPHER_ONLY] = useState(false);
+
+  const [criticalExtended, setcriticalExtended] = useState(false);
+  const [critical, setcritical] = useState(false);
+  
+
+
+
   const certificate = useCurrentCertificate();
+  const extendesKeysUsage = certificate?.extendedKeyUsage;
+  const keysUsage = certificate?.keyUsage;
+  
+  console.log("Extended key usage: "+certificate?.extendedKeyUsage);
+  console.log("Key usage: "+certificate?.keyUsage);
 
   const navigate = useNavigate();
 
@@ -77,6 +104,75 @@ const NewCertificate = () => {
     setEmail(event.target.value);
   };
 
+  const hendleSERVER_AUTH = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSERVER_AUTH(event.target.checked);
+    console.log(event.target.checked)
+  };
+
+  const hendleCLIENT_AUTH = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCLIENT_AUTH(event.target.checked);
+  };
+
+  const hendleCODE_SIGNING = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCODE_SIGNING(event.target.checked);
+  };
+
+  const hendleEMAIL_PROTECTION = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEMAIL_PROTECTION(event.target.checked);
+  };
+
+  const hendleTIME_STAMPING = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTIME_STAMPING(event.target.checked);
+  };
+
+  const hendleOCSP_SIGNING = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setOCSP_SIGNING(event.target.checked);
+  };
+
+  const hendleDIGITAL_SIGNATURE = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDIGITAL_SIGNATURE(event.target.checked);
+  };
+
+  const hendleNON_REPUDIATION = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNON_REPUDIATION(event.target.checked);
+  };
+
+  const hendleKEY_ENCIPHERMENT = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKEY_ENCIPHERMENT(event.target.checked);
+  };
+
+  const hendleDATA_ENCIPHERMENT = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDATA_ENCIPHERMENT(event.target.checked);
+  };
+
+  const hendleKEY_AGREEMENT = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKEY_AGREEMENT(event.target.checked);
+  };
+
+  const hendleKEY_CERT_SIGN = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKEY_CERT_SIGN(event.target.checked);
+  };
+
+  const hendleENCIPHER_ONLY = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setENCIPHER_ONLY(event.target.checked);
+  };
+
+  const hendleDECIPHER_ONLY = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDECIPHER_ONLY(event.target.checked);
+    console.log(event.target.checked)
+  };
+
+  const hendleExtendedCritical = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setcriticalExtended(event.target.checked);
+    console.log(event.target.checked);
+    
+  };
+  const hendleCritical = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setcritical(event.target.checked);
+    console.log(event.target.checked);
+  };
+
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -113,6 +209,22 @@ const NewCertificate = () => {
         "surname":surname,
         "phoneNumber":phoneNumber,
         "email": email,
+        "serverAuth": SERVER_AUTH,
+        "clientAuth": CLIENT_AUTH,
+        "codeSign": CODE_SIGNING,
+        "emailProtection": EMAIL_PROTECTION,
+        "timeStamping": TIME_STAMPING,
+        "ocspSigning": OCSP_SIGNING,
+        "digitalSignature": DIGITAL_SIGNATURE,
+        "nonRepudiation": NON_REPUDIATION,
+        "keyEnciphement": KEY_ENCIPHERMENT,
+        "dataEnciphement": DATA_ENCIPHERMENT,
+        "keyAgriment": KEY_AGREEMENT,
+        "keyCertSign": KEY_CERT_SIGN,
+        "enhipterOnly": ENCIPHER_ONLY,
+        "decipherOnly": DECIPHER_ONLY,
+        "criticalExtended": criticalExtended,
+        "critical": critical,
       }),
     }).then(res => {
       console.log(res.text())
@@ -133,7 +245,130 @@ const NewCertificate = () => {
           <option value="Intermediate">Intermediate</option>
           <option value="End entity">End Entity</option>
         </select>
+      </div>
+      <div>
+        <table>
+          <tr>
+            <td>
+              <h4>Extended key purpose</h4>
+            </td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>
+              <h4>Key purpose</h4>
+            </td>
+           
+            
+          </tr>
+          <tr>
+      <td>
+       <div>
+        <table>
+          <tr>
+            <td><input type="checkbox" id="SERVER_AUTH" checked ={SERVER_AUTH} onChange ={hendleSERVER_AUTH}/></td>
+            <td><label htmlFor="validFrom">Server auth</label></td>
+            <td>&nbsp;</td>
+            <td><input type="checkbox" id="CLIENT_AUTH" checked={CLIENT_AUTH} onChange={hendleCLIENT_AUTH}/></td>
+            <td><label htmlFor="validFrom">Client auth</label></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" id="CODE_SIGNING" checked={CODE_SIGNING} onChange={hendleCODE_SIGNING}/></td>
+            <td><label htmlFor="validFrom">Code signing</label></td>
+            <td>&nbsp;</td>
+            <td><input type="checkbox" id="EMAIL_PROTECTION" checked={EMAIL_PROTECTION} onChange={hendleEMAIL_PROTECTION}/></td>
+            <td><label htmlFor="validFrom">Email protection</label></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" id="TIME_STAMPING" checked={TIME_STAMPING} onChange={hendleTIME_STAMPING}/></td>
+            <td><label htmlFor="validFrom">Time stamping</label></td>
+            <td>&nbsp;</td>
+            <td><input type="checkbox" id="OCSP_SIGNING" checked={OCSP_SIGNING} onChange={hendleOCSP_SIGNING}/></td>
+            <td><label htmlFor="validFrom">OCSP signing</label></td>
+          </tr>
+        </table>
+      </div>
+    </td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>
+    <div>
+        <table>
+        <tr>
+          { keysUsage&& keysUsage[0] &&
+            <div>
+               <td><input type="checkbox" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
+                <td><label htmlFor="validFrom">Digutal signature</label></td>
+            </div>
+          }
+          {
+            keysUsage&&keysUsage[1]&&
+            <div>
+              <td><input type="checkbox" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
+              <td><label htmlFor="validFrom">Non repudiation</label></td>
+            </div>
+          }
+        </tr>
+        <tr>
+          {keysUsage&&keysUsage[2]&&
+          <div>
+            <td><input type="checkbox" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
+            <td><label htmlFor="validFrom">Key encipherment</label></td>
+          </div>
+          }
+         {
+          keysUsage&&keysUsage[3]&&
+          <div>
+            <td><input type="checkbox" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
+            <td><label htmlFor="validFrom">Data encipherment</label></td>
+          </div>
+         }  
+        </tr>
+        <tr>
+          {
+            keysUsage&&keysUsage[4]&&
+            <div>
+             <td><input type="checkbox" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
+             <td><label htmlFor="validFrom">Key agreement</label></td>
+            </div>
+          }
+          {
+            keysUsage&&keysUsage[5]&&
+            <div>
+              <td><input type="checkbox" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
+              <td><label htmlFor="validFrom">Key cert sign</label></td>
+            </div>
+          }
+        </tr>
+        <tr>
+          {
+            keysUsage&&keysUsage[7]&&
+            <div>
+              <td><input type="checkbox" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
+              <td><label htmlFor="validFrom">Encipher only</label></td>
+            </div>
+          }
+          
+          {keysUsage&&keysUsage[8]&&
+          <div>
+            <td><input type="checkbox" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
+            <td><label htmlFor="validFrom">Decipher only</label></td>
+          </div>
+          }
+        </tr>
+        </table>
       </div>      
+    </td>
+          </tr>
+        </table>
+        <input type="checkbox" id="criticalExtended" checked ={criticalExtended} onChange ={hendleExtendedCritical}/>
+        <label>Extended critical</label>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="checkbox" id="critical" checked ={critical} onChange ={hendleCritical}/>
+        <label>Critical</label>
+      </div>
+
       <div>
         <label htmlFor="validFrom">Valid From*</label>
         <input type="date" id="validFrom" value={validFrom} onChange={handleValidFromChange} required />
