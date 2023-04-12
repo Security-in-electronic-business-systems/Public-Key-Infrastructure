@@ -10,10 +10,6 @@ import javax.management.ConstructorParameters;
 import java.math.BigInteger;
 import java.util.Date;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class CertificateResponseDTO {
 
     private BigInteger serialNumber;
