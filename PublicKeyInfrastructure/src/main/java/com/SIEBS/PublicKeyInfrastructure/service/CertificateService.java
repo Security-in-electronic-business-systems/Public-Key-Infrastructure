@@ -1,12 +1,19 @@
 package com.SIEBS.PublicKeyInfrastructure.service;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.Extension;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,24 +22,35 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Service;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
 import com.SIEBS.PublicKeyInfrastructure.dto.IssuerInfoDTO;
 import com.SIEBS.PublicKeyInfrastructure.enumeration.CertificateType;
+import com.SIEBS.PublicKeyInfrastructure.enumeration.ExtendedKeyPurpose;
+import com.SIEBS.PublicKeyInfrastructure.enumeration.KeyPurpose;
 import com.SIEBS.PublicKeyInfrastructure.keyStore.CertificateStorage;
-import com.SIEBS.PublicKeyInfrastructure.model.Certificate;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateBaseInfo;
 import com.SIEBS.PublicKeyInfrastructure.model.CertificateChain;
 import com.SIEBS.PublicKeyInfrastructure.model.Issuer;
 import com.SIEBS.PublicKeyInfrastructure.model.Subject;
 import com.SIEBS.PublicKeyInfrastructure.repository.CertificateBaseInfoRepository;
+
 
 @Service
 public class CertificateService {
@@ -47,31 +65,39 @@ public class CertificateService {
 		this.certificateBaseInfoRepository = repo;
 	}
 	
-	public String generateAndSaveCertificate(CertificateRequestDTO certData) {
+	public String generateAndSaveCertificate(CertificateRequestDTO certData) throws IOException {
 		KeyPair keyPairSubject = generateKeyPair();
 		Subject subject = generateSubject(certData, keyPairSubject);
 		Issuer issuer;
+		CertificateBaseInfo issuerBI;
+		String hierarchyChain = Long.toHexString(certificateBaseInfoRepository.count());
+		List<org.bouncycastle.asn1.x509.Extension> extensions = findExtensionsFromRequest(certData);
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
-			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
+			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo(), extensions);
 			
 			this.certificateStorage.writeInCAKeyStore(cert);
-			CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.SELF_SIGNED, cert.getCertificateChain()[0].getSerialNumber().toString());
+			CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.SELF_SIGNED, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 			this.certificateBaseInfoRepository.save(certBaseInfo);
 			
 		}else {
 			//nabavljas issuera na osnovu serijskog broja iz key stora
 			issuer = certificateStorage.readIssuerFromStore(certData.getIssuer());
+
+			issuerBI = certificateBaseInfoRepository.findBySerialNumber(certData.getIssuer());
 			
-			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
+			hierarchyChain += "+" + issuerBI.getHierarchyChain();
+
+			
+			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo(), extensions);
 			
 			if(certData.getType() == CertificateType.INTERMEDIATE) {
 				this.certificateStorage.writeInCAKeyStore(cert);
-				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString());
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}else {
 				this.certificateStorage.writeInEEKeyStore(cert);
-				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.END_ENTITY, cert.getCertificateChain()[0].getSerialNumber().toString());
+				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.END_ENTITY, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
 				this.certificateBaseInfoRepository.save(certBaseInfo);
 			}
 		}
@@ -172,6 +198,9 @@ public class CertificateService {
 		dto.setValidTo(x509.getNotAfter());
 		dto.setValidFrom(x509.getNotBefore());
 		dto.setSerialNumber(x509.getSerialNumber());
+		dto.setExtendedKeyUsage(x509.getExtendedKeyUsage());
+		dto.setKeyUsage(x509.getKeyUsage());
+		
 		return dto;
 	}
 
@@ -207,6 +236,94 @@ public class CertificateService {
 			return null;
 		}
 	}
+	
+	public boolean validate (String serialNum) {
+		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		CertificateBaseInfo certificateIssuer; 
+		X509Certificate x509certificateIssuer;
+		boolean valid = true;
+		if (certificate != null){
+			// da li je sertifikat povucen
+			if (certificate.isRevoked()) {
+				valid = false;
+			}
+			
+			X509Certificate x509certificate = (X509Certificate) certificateStorage
+					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			x509certificateIssuer = (X509Certificate)  certificateStorage.getIssuer(x509certificate);
+			certificateIssuer = certificateBaseInfoRepository.findBySerialNumber(x509certificateIssuer.getSerialNumber().toString());
+			
+			// provera javnog kljuca 
+			try {
+				x509certificate.verify(x509certificateIssuer.getPublicKey());
+			} catch (Exception e) {
+				valid = false;
+			}
+			
+			while (!certificateIssuer.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
+				//provera da li je issuer povucen
+				if (certificateIssuer!=null)
+					if (certificateIssuer.isRevoked()) 
+						valid = false;
+				
+				 try {
+					 x509certificateIssuer.checkValidity();
+			        } catch (CertificateExpiredException e) {
+			        	valid = false;
+			        } catch (CertificateNotYetValidException e) {
+			        	valid = false;
+			        }
+				x509certificateIssuer = (X509Certificate)  certificateStorage.getIssuer(x509certificateIssuer);
+				certificateIssuer = certificateBaseInfoRepository.findBySerialNumber(x509certificateIssuer.getSerialNumber().toString()); 				 
+			}
+			
+			//provera self_signed
+			if (certificateIssuer!=null)
+				if (certificateIssuer.isRevoked()) 
+					valid = false;
+			
+			 try {
+				 x509certificateIssuer.checkValidity();
+		        } catch (CertificateExpiredException e) {
+		        	valid = false;
+		        } catch (CertificateNotYetValidException e) {
+		        	valid = false;
+		        }
+			
+			
+
+			
+			
+			//System.out.println(x509certificate.toString());
+			//System.out.println(x509certificateIssuer.toString());
+			// provera da li je istekao sertifikat ili da li jos uvek nije validan
+			 try {
+				 x509certificate.checkValidity();
+		        } catch (CertificateExpiredException e) {
+		        	valid = false;
+		        } catch (CertificateNotYetValidException e) {
+		        	valid = false;
+		        }
+			 
+			
+			 
+			
+			 			 			 
+		} else {
+			valid = false;
+		}
+		return valid;		
+	}
+	
+	public void revoke (String serialNum) {
+		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		certificate.setRevoked(true);
+		certificateBaseInfoRepository.save(certificate);
+        List<CertificateBaseInfo> childCerts = certificateBaseInfoRepository.findByChainIdLike(certificate.getHierarchyChain());
+        for (var child : childCerts) child.setRevoked(true);
+        certificateBaseInfoRepository.saveAll(childCerts);
+		
+	}
 
 	public X509Certificate getX509BySerialNumber(String serialNum){
 		X509Certificate x509certificate = (X509Certificate) certificateStorage
@@ -214,4 +331,85 @@ public class CertificateService {
 		return x509certificate;
 	}
 
+	
+	public List<org.bouncycastle.asn1.x509.Extension> findExtensionsFromRequest(CertificateRequestDTO certificateRequestDTO) throws IOException{
+		List<org.bouncycastle.asn1.x509.Extension> extensions = new ArrayList<>();
+		List<KeyPurposeId> extendedKeyUsageIds = new ArrayList<>();
+		
+		System.out.println("CONVERT EXTENSION STARTED...");
+		if(certificateRequestDTO.isClientAuth() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.CLIENT_AUTH.getKeyPurposeId());
+		}
+		if(certificateRequestDTO.isServerAuth() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.SERVER_AUTH.getKeyPurposeId());
+		}
+		if(certificateRequestDTO.isCodeSign() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.CODE_SIGNING.getKeyPurposeId());
+		}
+		if(certificateRequestDTO.isEmailProtection() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.EMAIL_PROTECTION.getKeyPurposeId());
+		}
+		if(certificateRequestDTO.isTimeStamping() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.TIME_STAMPING.getKeyPurposeId());
+		}
+		if(certificateRequestDTO.isOcspSigning() == true){
+			extendedKeyUsageIds.add(ExtendedKeyPurpose.OCSP_SIGNING.getKeyPurposeId());
+		}
+		
+		
+		List<Integer> keyUsageIds = new ArrayList<>();
+		
+		if(certificateRequestDTO.isDigitalSignature() == true){
+			keyUsageIds.add(KeyPurpose.DIGITAL_SIGNATURE.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isNonRepudiation() == true){
+			keyUsageIds.add(KeyPurpose.NON_REPUDIATION.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isKeyEnciphement() == true){
+			keyUsageIds.add(KeyPurpose.KEY_ENCIPHERMENT.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isDataEnciphement() == true){
+			keyUsageIds.add(KeyPurpose.DATA_ENCIPHERMENT.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isKeyAgriment() == true){
+			keyUsageIds.add(KeyPurpose.KEY_AGREEMENT.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isKeyCertSign() == true){
+			keyUsageIds.add(KeyPurpose.KEY_CERT_SIGN.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isEnhipterOnly() == true){
+			keyUsageIds.add(KeyPurpose.ENCIPHER_ONLY.getKeyUsageId());
+		}
+		if(certificateRequestDTO.isDecipherOnly() == true){
+			keyUsageIds.add(KeyPurpose.DECIPHER_ONLY.getKeyUsageId());
+		}
+		if(extendedKeyUsageIds.isEmpty() && keyUsageIds.isEmpty()) {
+			return null;
+		}
+		
+		if (extendedKeyUsageIds.isEmpty()==false) {
+			org.bouncycastle.asn1.x509.Extension extendedExtension = new org.bouncycastle.asn1.x509.Extension(
+					org.bouncycastle.asn1.x509.Extension.extendedKeyUsage, 
+					certificateRequestDTO.isCriticalExtended(),
+					new DEROctetString(new ExtendedKeyUsage(extendedKeyUsageIds.toArray(new KeyPurposeId[extendedKeyUsageIds.size()]))));
+			extensions.add(extendedExtension);
+		}
+		
+		if (!keyUsageIds.isEmpty()) {
+		    int usage = 0;
+		    for (Integer id : keyUsageIds) {
+		        usage |= id;
+		    }
+		    org.bouncycastle.asn1.x509.Extension keyUsageExtension = new org.bouncycastle.asn1.x509.Extension(
+		            org.bouncycastle.asn1.x509.Extension.keyUsage, 
+		            certificateRequestDTO.isCritical(), 
+		            new DEROctetString(new KeyUsage(usage)));
+		    extensions.add(keyUsageExtension);
+		}
+
+		return extensions;
+	}
+	
+	
+	
 }

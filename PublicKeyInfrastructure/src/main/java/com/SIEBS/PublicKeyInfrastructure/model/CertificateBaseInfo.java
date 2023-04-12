@@ -18,19 +18,34 @@ public class CertificateBaseInfo {
 
     @Enumerated(EnumType.STRING)
     private CertificateType certificateType;
+    
+    private String hierarchyChain;
 
     public CertificateBaseInfo() {
     }
 
-	public CertificateBaseInfo(boolean revoked, CertificateType certificateType, String sn) {
+
+
+	public CertificateBaseInfo(boolean revoked,  CertificateType certificateType, String serialNumber, String hierarchyChain) {
 		super();
 		this.revoked = revoked;
+		this.serialNumber = serialNumber;
 		this.certificateType = certificateType;
-		this.serialNumber = sn;
+		this.hierarchyChain = hierarchyChain;
 	}
+
+
 
 	public String getSerialNumber() {
 		return serialNumber;
+	}
+
+	public String getHierarchyChain() {
+		return hierarchyChain;
+	}
+
+	public void setHierarchyChain(String hierarchyChain) {
+		this.hierarchyChain = hierarchyChain;
 	}
 
 	public void setSerialNumber(String serialNumber) {
