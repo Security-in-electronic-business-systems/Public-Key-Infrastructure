@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentCertificate } from "../hooks/getCurrentCertificate";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const NewCertificate = () => {
   const [certificateType, setCertificateType] = useState("");
@@ -236,16 +237,17 @@ const NewCertificate = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="form-group">
       <div>
         <label htmlFor="certificateType">Certificate Type*</label>
-        <select id="certificateType" value={certificateType} onChange={handleCertificateTypeChange} required>
+        <select id="certificateType" className="form-select" value={certificateType} onChange={handleCertificateTypeChange} required>
           <option value="">Select Certificate Type</option>
           {certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
           <option value="Intermediate">Intermediate</option>
           <option value="End entity">End Entity</option>
         </select>
       </div>
+      <br/>
       <div>
         <table>
           <tr>
@@ -266,24 +268,24 @@ const NewCertificate = () => {
        <div>
         <table>
           <tr>
-            <td><input type="checkbox" id="SERVER_AUTH" checked ={SERVER_AUTH} onChange ={hendleSERVER_AUTH}/></td>
+            <td><input type="checkbox" className="form-check-input" id="SERVER_AUTH" checked ={SERVER_AUTH} onChange ={hendleSERVER_AUTH}/></td>
             <td><label htmlFor="validFrom">Server auth</label></td>
             <td>&nbsp;</td>
-            <td><input type="checkbox" id="CLIENT_AUTH" checked={CLIENT_AUTH} onChange={hendleCLIENT_AUTH}/></td>
+            <td><input type="checkbox" className="form-check-input" id="CLIENT_AUTH" checked={CLIENT_AUTH} onChange={hendleCLIENT_AUTH}/></td>
             <td><label htmlFor="validFrom">Client auth</label></td>
           </tr>
           <tr>
-            <td><input type="checkbox" id="CODE_SIGNING" checked={CODE_SIGNING} onChange={hendleCODE_SIGNING}/></td>
+            <td><input type="checkbox" className="form-check-input" id="CODE_SIGNING" checked={CODE_SIGNING} onChange={hendleCODE_SIGNING}/></td>
             <td><label htmlFor="validFrom">Code signing</label></td>
             <td>&nbsp;</td>
-            <td><input type="checkbox" id="EMAIL_PROTECTION" checked={EMAIL_PROTECTION} onChange={hendleEMAIL_PROTECTION}/></td>
+            <td><input type="checkbox" className="form-check-input" id="EMAIL_PROTECTION" checked={EMAIL_PROTECTION} onChange={hendleEMAIL_PROTECTION}/></td>
             <td><label htmlFor="validFrom">Email protection</label></td>
           </tr>
           <tr>
-            <td><input type="checkbox" id="TIME_STAMPING" checked={TIME_STAMPING} onChange={hendleTIME_STAMPING}/></td>
+            <td><input type="checkbox" className="form-check-input" id="TIME_STAMPING" checked={TIME_STAMPING} onChange={hendleTIME_STAMPING}/></td>
             <td><label htmlFor="validFrom">Time stamping</label></td>
             <td>&nbsp;</td>
-            <td><input type="checkbox" id="OCSP_SIGNING" checked={OCSP_SIGNING} onChange={hendleOCSP_SIGNING}/></td>
+            <td><input type="checkbox" className="form-check-input" id="OCSP_SIGNING" checked={OCSP_SIGNING} onChange={hendleOCSP_SIGNING}/></td>
             <td><label htmlFor="validFrom">OCSP signing</label></td>
           </tr>
         </table>
@@ -298,14 +300,14 @@ const NewCertificate = () => {
         <tr>
           { keysUsage&& keysUsage[0] &&
             <div>
-               <td><input type="checkbox" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
+               <td><input type="checkbox" className="form-check-input" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
                 <td><label htmlFor="validFrom">Digutal signature</label></td>
             </div>
           }
           {
             keysUsage&&keysUsage[1]&&
             <div>
-              <td><input type="checkbox" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
+              <td><input type="checkbox" className="form-check-input" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
               <td><label htmlFor="validFrom">Non repudiation</label></td>
             </div>
           }
@@ -313,14 +315,14 @@ const NewCertificate = () => {
         <tr>
           {keysUsage&&keysUsage[2]&&
           <div>
-            <td><input type="checkbox" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
+            <td><input type="checkbox" className="form-check-input" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
             <td><label htmlFor="validFrom">Key encipherment</label></td>
           </div>
           }
          {
           keysUsage&&keysUsage[3]&&
           <div>
-            <td><input type="checkbox" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
+            <td><input type="checkbox" className="form-check-input" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
             <td><label htmlFor="validFrom">Data encipherment</label></td>
           </div>
          }  
@@ -329,14 +331,14 @@ const NewCertificate = () => {
           {
             keysUsage&&keysUsage[4]&&
             <div>
-             <td><input type="checkbox" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
+             <td><input type="checkbox" className="form-check-input" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
              <td><label htmlFor="validFrom">Key agreement</label></td>
             </div>
           }
           {
             keysUsage&&keysUsage[5]&&
             <div>
-              <td><input type="checkbox" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
+              <td><input type="checkbox" className="form-check-input" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
               <td><label htmlFor="validFrom">Key cert sign</label></td>
             </div>
           }
@@ -345,71 +347,88 @@ const NewCertificate = () => {
           {
             keysUsage&&keysUsage[7]&&
             <div>
-              <td><input type="checkbox" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
+              <td><input type="checkbox" className="form-check-input" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
               <td><label htmlFor="validFrom">Encipher only</label></td>
             </div>
           }
           
           {keysUsage&&keysUsage[8]&&
           <div>
-            <td><input type="checkbox" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
+            <td><input type="checkbox" className="form-check-input" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
             <td><label htmlFor="validFrom">Decipher only</label></td>
           </div>
           }
         </tr>
         </table>
       </div>      
+      <br/><br/><br/>
     </td>
           </tr>
         </table>
-        <input type="checkbox" id="criticalExtended" checked ={criticalExtended} onChange ={hendleExtendedCritical}/>
-        <label>Extended critical</label>
+        <input type="checkbox" className="form-check-input" id="criticalExtended" checked ={criticalExtended} onChange ={hendleExtendedCritical}/>
+        <label >Extended critical</label>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="checkbox" id="critical" checked ={critical} onChange ={hendleCritical}/>
+        <input type="checkbox" className="form-check-input" id="critical" checked ={critical} onChange ={hendleCritical}/>
         <label>Critical</label>
       </div>
+          <br/><br/>
 
-      <div>
+
+        <table>
+          <tr>
+            <td>
+            <div>
         <label htmlFor="validFrom">Valid From*</label>
-        <input type="date" id="validFrom" value={validFrom} onChange={handleValidFromChange} required />
+        <input type="date" id="validFrom" className="form-control" value={validFrom} onChange={handleValidFromChange} required />
       </div>
       <div>
         <label htmlFor="validTo">Valid To*</label>
-        <input type="date" id="validTo" value={validTo} onChange={handleValidToChange} required />
+        <input type="date" className="form-control" id="validTo" value={validTo} onChange={handleValidToChange} required />
       </div>
       <div>
         <label htmlFor="cn">CN*</label>
-        <input type="text" id="cn" value={cn} onChange={handleCnChange} required />
+        <input type="text" className="form-control" id="cn" value={cn} onChange={handleCnChange} required />
       </div>
       <div>
         <label htmlFor="on">O*</label>
-        <input type="text" id="o" value={o} onChange={handleOChange} required />
+        <input type="text" className="form-control" id="o" value={o} onChange={handleOChange} required />
       </div>
       <div>
         <label htmlFor="on">ON</label>
-        <input type="text" id="on" value={on} onChange={handleOnChange} />
+        <input type="text" className="form-control" id="on" value={on} onChange={handleOnChange} />
       </div>
-      <div>
+      
+      </td>
+<td>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;</td>
+
+            <td>
+            <div>
         <label htmlFor="on">C</label>
-        <input type="text" id="c" value={c} onChange={handleCChange} />
+        <input type="text" className="form-control" id="c" value={c} onChange={handleCChange} />
       </div>
-      <div>
+            <div>
         <label htmlFor="name">Name</label>
-        <input type="text" id="name" value={name} onChange={handleNameChange} />
+        <input type="text" className="form-control" id="name" value={name} onChange={handleNameChange} />
       </div>
       <div>
         <label htmlFor="surname">Surname</label>
-        <input type="text" id="surname" value={surname} onChange={handleSurnameChange} />
+        <input type="text" className="form-control" id="surname" value={surname} onChange={handleSurnameChange} />
       </div>
       <div>
         <label htmlFor="phoneNumber">Phone Number</label>
-        <input type="text" id="phoneNumber" value={phoneNumber} onChange={handlePhoneNumberChange} />
+        <input type="text" className="form-control" id="phoneNumber" value={phoneNumber} onChange={handlePhoneNumberChange} />
       </div>
       <div>
         <label htmlFor="email">Email</label>
-        <input type="email" id="email" value={email} onChange={handleEmailChange} />
+        <input type="email" className="form-control" id="email" value={email} onChange={handleEmailChange} />
       </div>
-      <button type="submit">Submit</button>
+            </td>
+          </tr>
+        </table>
+      
+      
+      <button type="submit" className="btn btn-primary">Submit</button>
     </form>
   );
 };
