@@ -40,8 +40,11 @@ const NewCertificate = () => {
 
 
   const certificate = useCurrentCertificate();
-  console.log("cet "+certificate?.extendedKeyUsage);
-  console.log("hjshjd "+certificate?.keyUsage);
+  const extendesKeysUsage = certificate?.extendedKeyUsage;
+  const keysUsage = certificate?.keyUsage;
+  
+  console.log("Extended key usage: "+certificate?.extendedKeyUsage);
+  console.log("Key usage: "+certificate?.keyUsage);
 
   const navigate = useNavigate();
 
@@ -293,32 +296,66 @@ const NewCertificate = () => {
     <div>
         <table>
         <tr>
-          <td><input type="checkbox" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
-          <td><label htmlFor="validFrom">Digutal signature</label></td>
-          <td>&nbsp;</td>
-          <td><input type="checkbox" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
-          <td><label htmlFor="validFrom">Non repudiation</label></td>
+          { keysUsage&& keysUsage[0] &&
+            <div>
+               <td><input type="checkbox" id="DIGITAL_SIGNATURE" checked={DIGITAL_SIGNATURE} onChange={hendleDIGITAL_SIGNATURE}/></td>
+                <td><label htmlFor="validFrom">Digutal signature</label></td>
+            </div>
+          }
+          {
+            keysUsage&&keysUsage[1]&&
+            <div>
+              <td><input type="checkbox" id="NON_REPUDIATION" checked={NON_REPUDIATION} onChange={hendleNON_REPUDIATION}/></td>
+              <td><label htmlFor="validFrom">Non repudiation</label></td>
+            </div>
+          }
         </tr>
         <tr>
-          <td><input type="checkbox" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
-          <td><label htmlFor="validFrom">Key encipherment</label></td>
-          <td>&nbsp;</td>
-          <td><input type="checkbox" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
-          <td><label htmlFor="validFrom">Data encipherment</label></td>
+          {keysUsage&&keysUsage[2]&&
+          <div>
+            <td><input type="checkbox" id="KEY_ENCIPHERMENT" checked={KEY_ENCIPHERMENT} onChange={hendleKEY_ENCIPHERMENT}/></td>
+            <td><label htmlFor="validFrom">Key encipherment</label></td>
+          </div>
+          }
+         {
+          keysUsage&&keysUsage[3]&&
+          <div>
+            <td><input type="checkbox" id="DATA_ENCIPHERMENT" checked={DATA_ENCIPHERMENT} onChange={hendleDATA_ENCIPHERMENT}/></td>
+            <td><label htmlFor="validFrom">Data encipherment</label></td>
+          </div>
+         }  
         </tr>
         <tr>
-          <td><input type="checkbox" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
-          <td><label htmlFor="validFrom">Key agreement</label></td>
-          <td>&nbsp;</td>
-          <td><input type="checkbox" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
-          <td><label htmlFor="validFrom">Key cert sign</label></td>
+          {
+            keysUsage&&keysUsage[4]&&
+            <div>
+             <td><input type="checkbox" id="KEY_AGREEMENT" checked={KEY_AGREEMENT} onChange={hendleKEY_AGREEMENT}/></td>
+             <td><label htmlFor="validFrom">Key agreement</label></td>
+            </div>
+          }
+          {
+            keysUsage&&keysUsage[5]&&
+            <div>
+              <td><input type="checkbox" id="KEY_CERT_SIGN" checked={KEY_CERT_SIGN} onChange={hendleKEY_CERT_SIGN}/></td>
+              <td><label htmlFor="validFrom">Key cert sign</label></td>
+            </div>
+          }
         </tr>
         <tr>
-          <td><input type="checkbox" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
-          <td><label htmlFor="validFrom">Encipher only</label></td>
-          <td>&nbsp;</td>
-          <td><input type="checkbox" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
-          <td><label htmlFor="validFrom">Decipher only</label></td>
+          {
+            keysUsage&&keysUsage[7]&&
+            <div>
+              <td><input type="checkbox" id="ENCIPHER_ONLY" checked={ENCIPHER_ONLY} onChange={hendleENCIPHER_ONLY}/></td>
+              <td><label htmlFor="validFrom">Encipher only</label></td>
+            </div>
+          }
+          
+          {keysUsage&&keysUsage[8]&&
+          <div>
+            <td><input type="checkbox" id="DECIPHER_ONLY" checked={DECIPHER_ONLY} onChange={hendleDECIPHER_ONLY}/></td>
+            <td><label htmlFor="validFrom">Decipher only</label></td>
+          </div>
+          }
         </tr>
         </table>
       </div>      

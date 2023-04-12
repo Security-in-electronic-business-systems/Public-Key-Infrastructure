@@ -5,8 +5,8 @@ class Certificate {
     public certificateType: string;
     public validFrom: Date;
     public validTo: Date;
-    public extendedKeyUsage: String[] | undefined;
-    public keyUsage: any[] | undefined;
+    public extendedKeyUsage: String[] = [];
+    public keyUsage: boolean[]=[];
   
     constructor(
       serialNumber: number,
@@ -15,8 +15,8 @@ class Certificate {
       certificateType: string,
       validFrom: Date,
       validTo: Date,
-      extendedKeyUsage:String[] | undefined,
-      keyUsage : boolean[] | undefined
+      extendedKeyUsage:String[],
+      keyUsage : boolean[]
     ) {
       this.serialNumber = serialNumber;
       this.issuerCN = issuerCN;
