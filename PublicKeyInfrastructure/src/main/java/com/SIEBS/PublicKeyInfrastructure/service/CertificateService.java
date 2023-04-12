@@ -219,6 +219,8 @@ public class CertificateService {
 	
 	public boolean validate (String serialNum) {
 		CertificateBaseInfo certificate = certificateBaseInfoRepository.findBySerialNumber(serialNum);
+		CertificateBaseInfo certificateIssuer; 
+		X509Certificate x509certificateIssuer;
 		boolean valid = true;
 		if (certificate != null){
 			// da li je sertifikat povucen
@@ -228,7 +230,52 @@ public class CertificateService {
 			
 			X509Certificate x509certificate = (X509Certificate) certificateStorage
 					.readCertificateFromKeyStore(certificate.getSerialNumber());
+			x509certificateIssuer = (X509Certificate)  certificateStorage.getIssuer(x509certificate);
+			certificateIssuer = certificateBaseInfoRepository.findBySerialNumber(x509certificateIssuer.getSerialNumber().toString());
 			
+			// provera javnog kljuca 
+			try {
+				x509certificate.verify(x509certificateIssuer.getPublicKey());
+			} catch (Exception e) {
+				valid = false;
+			}
+			
+			while (!certificateIssuer.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
+				//provera da li je issuer povucen
+				if (certificateIssuer!=null)
+					if (certificateIssuer.isRevoked()) 
+						valid = false;
+				
+				 try {
+					 x509certificateIssuer.checkValidity();
+			        } catch (CertificateExpiredException e) {
+			        	valid = false;
+			        } catch (CertificateNotYetValidException e) {
+			        	valid = false;
+			        }
+				x509certificateIssuer = (X509Certificate)  certificateStorage.getIssuer(x509certificateIssuer);
+				certificateIssuer = certificateBaseInfoRepository.findBySerialNumber(x509certificateIssuer.getSerialNumber().toString()); 				 
+			}
+			
+			//provera self_signed
+			if (certificateIssuer!=null)
+				if (certificateIssuer.isRevoked()) 
+					valid = false;
+			
+			 try {
+				 x509certificateIssuer.checkValidity();
+		        } catch (CertificateExpiredException e) {
+		        	valid = false;
+		        } catch (CertificateNotYetValidException e) {
+		        	valid = false;
+		        }
+			
+			
+
+			
+			
+			//System.out.println(x509certificate.toString());
+			//System.out.println(x509certificateIssuer.toString());
 			// provera da li je istekao sertifikat ili da li jos uvek nije validan
 			 try {
 				 x509certificate.checkValidity();
@@ -237,6 +284,10 @@ public class CertificateService {
 		        } catch (CertificateNotYetValidException e) {
 		        	valid = false;
 		        }
+			 
+			
+			 
+			
 			 			 			 
 		} else {
 			valid = false;

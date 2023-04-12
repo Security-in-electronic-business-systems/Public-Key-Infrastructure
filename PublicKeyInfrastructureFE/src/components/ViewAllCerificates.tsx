@@ -22,7 +22,8 @@ function ViewAllCertificates() {
   const handleValidate = async (serialNumber: number) => {
   
      fetch(`http://localhost:8081/api/certificate/validate/${serialNumber}`)
-     .then((response) => alert(response.text()));
+     .then((response) => response.text())
+     .then((data) => alert(data));
 
       
   

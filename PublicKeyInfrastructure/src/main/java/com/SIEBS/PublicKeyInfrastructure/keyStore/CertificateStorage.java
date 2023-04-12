@@ -189,4 +189,14 @@ public class CertificateStorage {
         }
 		
 	}
+	
+	public X509Certificate getIssuer(X509Certificate cert) {
+		List<X509Certificate> certificates = getAllValidIsuers();
+		for (X509Certificate c: certificates) {
+			if (cert.getIssuerX500Principal().toString().equals(c.getSubjectX500Principal().toString())) {
+				return c;
+			}
+		}
+		return null;
+	}
 }

@@ -65,7 +65,7 @@ public class CertificateController {
 	@CrossOrigin(origins = "*")
 	@GetMapping("/validate/{serialNumber}")
 	public ResponseEntity<String> validate(@PathVariable String serialNumber) {
-		String response = "";
+		String response = "Validation faild";
 		if (certificateService.validate(serialNumber))	
 			response = "Validation successful for certificate with serial number " + serialNumber;
 	    return ResponseEntity.ok(response);
