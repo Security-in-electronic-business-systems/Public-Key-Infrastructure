@@ -5,9 +5,11 @@ import RevokeCertificate from "../components/RevokeCertificate";
 import ViewAllCertificates from "../components/ViewAllCerificates";
 import ViewCertificate from "../components/ViewCertificate";
 import Login from "../components/Login";
+import Navbar from "../components/NavBar";
 
 const AppRouter: React.FC = () => {
   return (
+    <>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -17,6 +19,7 @@ const AppRouter: React.FC = () => {
         <Route path="/viewCertificate" element={<ViewCertificate />} />
       </Routes>
     </Router>
+    </>
   );
 };
 

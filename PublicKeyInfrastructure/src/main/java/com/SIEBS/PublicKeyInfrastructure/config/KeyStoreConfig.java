@@ -13,6 +13,10 @@ public class KeyStoreConfig {
 
     @Value("${pki.keystore.password}")
     private String keyStorePassword;
+    
+    /*public KeyStoreConfig() {
+    	//this.keyStorePassword = System.getProperty("KEY_STORE_PASSWORD");
+    }*/
 
     public String getCAKeyStore() {
         return CAKeyStore;
@@ -35,6 +39,6 @@ public class KeyStoreConfig {
     }
 
     public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = keyStorePassword;
+        this.keyStorePassword = System.getenv("KEY_STORE_PASSWORD");
     }
 }
