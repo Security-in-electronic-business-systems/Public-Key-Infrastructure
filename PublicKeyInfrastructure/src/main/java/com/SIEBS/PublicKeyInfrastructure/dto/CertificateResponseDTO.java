@@ -7,8 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.management.ConstructorParameters;
+
+import org.bouncycastle.asn1.x509.Extension;
+
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
 
 public class CertificateResponseDTO {
 
@@ -19,6 +23,9 @@ public class CertificateResponseDTO {
     //private boolean revoked;
     private Date validFrom;
     private Date validTo;
+    List<String> extendedKeyUsage;
+    boolean[] keyUsage;
+    
 	public BigInteger getSerialNumber() {
 		return serialNumber;
 	}
@@ -56,8 +63,35 @@ public class CertificateResponseDTO {
 		this.validTo = validTo;
 	}
 
+//	public CertificateResponseDTO(BigInteger serialNumber, String issuerCN, String subjectCN, String certificateType,
+//			Date validFrom, Date validTo) {
+//		super();
+//		this.serialNumber = serialNumber;
+//		this.issuerCN = issuerCN;
+//		this.subjectCN = subjectCN;
+//		this.certificateType = certificateType;
+//		this.validFrom = validFrom;
+//		this.validTo = validTo;
+//	}
+	public CertificateResponseDTO() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public List<String> getExtendedKeyUsage() {
+		return extendedKeyUsage;
+	}
+	public void setExtendedKeyUsage(List<String> extendedKeyUsage) {
+		this.extendedKeyUsage = extendedKeyUsage;
+	}
+	public boolean[] getKeyUsage() {
+		return keyUsage;
+	}
+	public void setKeyUsage(boolean[] keyUsage) {
+		this.keyUsage = keyUsage;
+	}
+
 	public CertificateResponseDTO(BigInteger serialNumber, String issuerCN, String subjectCN, String certificateType,
-			Date validFrom, Date validTo) {
+			Date validFrom, Date validTo, List<String> extendedKeyUsage, boolean[] keyUsage) {
 		super();
 		this.serialNumber = serialNumber;
 		this.issuerCN = issuerCN;
@@ -65,11 +99,10 @@ public class CertificateResponseDTO {
 		this.certificateType = certificateType;
 		this.validFrom = validFrom;
 		this.validTo = validTo;
+		this.extendedKeyUsage = extendedKeyUsage;
+		this.keyUsage = keyUsage;
 	}
-	public CertificateResponseDTO() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+
 
     
 }

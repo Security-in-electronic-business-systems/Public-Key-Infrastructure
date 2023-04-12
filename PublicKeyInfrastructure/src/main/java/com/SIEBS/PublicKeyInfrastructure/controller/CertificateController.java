@@ -1,5 +1,6 @@
 package com.SIEBS.PublicKeyInfrastructure.controller;
 
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -32,11 +33,12 @@ public class CertificateController {
 	
 	@CrossOrigin(origins = "*")
 	@PostMapping("/save")
-    public String save(@RequestBody CertificateRequestDTO certificateRequestDTO) {
+    public String save(@RequestBody CertificateRequestDTO certificateRequestDTO) throws IOException {
 		System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         return certificateService.generateAndSaveCertificate(certificateRequestDTO);
         
     }
+	
 	@CrossOrigin(origins = "*")
 	@GetMapping("/getAll")
 	public List<CertificateResponseDTO> getAll() throws CertificateException {
