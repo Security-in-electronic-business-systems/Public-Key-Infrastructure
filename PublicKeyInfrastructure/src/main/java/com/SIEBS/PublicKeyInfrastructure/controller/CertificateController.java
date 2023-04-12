@@ -72,7 +72,7 @@ public class CertificateController {
 	}
 	
 	@CrossOrigin(origins = "*")
-	@PutMapping("/revoke/{serialNumber}")
+	@PostMapping("/revoke/{serialNumber}")
 	public void revoke(@PathVariable String serialNumber) {		
 		certificateService.revoke(serialNumber);
 	}

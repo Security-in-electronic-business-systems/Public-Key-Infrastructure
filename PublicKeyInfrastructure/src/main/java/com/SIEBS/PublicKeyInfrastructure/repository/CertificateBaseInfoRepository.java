@@ -13,6 +13,6 @@ public interface CertificateBaseInfoRepository extends JpaRepository<Certificate
     @Query(value = "select c from CertificateBaseInfo c where c.serialNumber = ?1")
     CertificateBaseInfo findBySerialNumber(String serialNumber);
 
-    @Query(value = "select c from CertificateBaseInfo c where c.hierarchyChain like %?1%")
+    @Query(value = "select c from CertificateBaseInfo c where c.hierarchyChain like %?1")
     List<CertificateBaseInfo> findByChainIdLike(String chainId);
 }

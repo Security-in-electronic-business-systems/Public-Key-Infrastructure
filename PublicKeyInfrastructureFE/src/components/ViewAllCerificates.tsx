@@ -28,22 +28,12 @@ function ViewAllCertificates() {
   
   };
 
-  const handleRevoke = async (serialNumber: number) => {
-    try {
-      const response = await fetch(`http://localhost:8081/api/certificate/revoke/${serialNumber}`, {
-        method: "PUT",
-      });
-      const data = await response.json();
-      alert(data.message);
-    } catch {
-      
-    }
-
-    fetch(`http://localhost:8081/api/certificate/revoke/${serialNumber}`, {
-      method: 'PUT',
+    const handleRevoke = async (serialNumber: number) => {
+    await fetch(`http://localhost:8081/api/certificate/revoke/${serialNumber}`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
     })
       .then(response => {
         if (!response.ok) {

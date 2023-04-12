@@ -58,6 +58,7 @@ public class CertificateService {
 		KeyPair keyPairSubject = generateKeyPair();
 		Subject subject = generateSubject(certData, keyPairSubject);
 		Issuer issuer;
+		CertificateBaseInfo issuerBI;
 		String hierarchyChain = Long.toHexString(certificateBaseInfoRepository.count());
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
@@ -70,9 +71,9 @@ public class CertificateService {
 		}else {
 			//nabavljas issuera na osnovu serijskog broja iz key stora
 			issuer = certificateStorage.readIssuerFromStore(certData.getIssuer());
-			
+			issuerBI = certificateBaseInfoRepository.findBySerialNumber(certData.getIssuer());
 			CertificateChain cert = certificateGenerator.generateCertificate(subject, issuer, certData.getValidFrom(), certData.getValidTo());
-			hierarchyChain += "+" ;
+			hierarchyChain += "+" + issuerBI.getHierarchyChain();
 			if(certData.getType() == CertificateType.INTERMEDIATE) {
 				this.certificateStorage.writeInCAKeyStore(cert);
 				CertificateBaseInfo certBaseInfo = new CertificateBaseInfo(false, CertificateType.INTERMEDIATE, cert.getCertificateChain()[0].getSerialNumber().toString(), hierarchyChain);
@@ -249,6 +250,7 @@ public class CertificateService {
 		certificateBaseInfoRepository.save(certificate);
         List<CertificateBaseInfo> childCerts = certificateBaseInfoRepository.findByChainIdLike(certificate.getHierarchyChain());
         for (var child : childCerts) child.setRevoked(true);
+        certificateBaseInfoRepository.saveAll(childCerts);
 		
 	}
 
