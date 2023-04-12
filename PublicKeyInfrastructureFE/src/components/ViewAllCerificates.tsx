@@ -20,13 +20,12 @@ function ViewAllCertificates() {
   }, []);
 
   const handleValidate = async (serialNumber: number) => {
-    try {
-      const response = await fetch(`http://localhost:8081/api/certificate/validate/${serialNumber}`);
-      const data = await response.json();
-      alert(data.message);
-    } catch (error) {
-      console.error(error);
-    }
+  
+     fetch(`http://localhost:8081/api/certificate/validate/${serialNumber}`)
+     .then((response) => alert(response.text()));
+
+      
+  
   };
 
   const handleRevoke = async (serialNumber: number) => {
@@ -36,9 +35,25 @@ function ViewAllCertificates() {
       });
       const data = await response.json();
       alert(data.message);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      
     }
+
+    fetch(`http://localhost:8081/api/certificate/revoke/${serialNumber}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to revoke certificate');
+        }
+        console.log('Certificate revoked successfully');
+      })
+      .catch(error => {
+        console.error(error);
+      });
   };
   return (
     <div>

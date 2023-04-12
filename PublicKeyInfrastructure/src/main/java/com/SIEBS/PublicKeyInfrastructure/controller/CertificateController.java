@@ -1,13 +1,18 @@
 package com.SIEBS.PublicKeyInfrastructure.controller;
 
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateResponseDTO;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import com.SIEBS.PublicKeyInfrastructure.dto.CertificateRequestDTO;
@@ -74,6 +79,27 @@ public class CertificateController {
 
 	public List<IssuerInfoDTO> getAllValidIsuers(){
 		return this.certificateService.getAllValidIsuers();
+	}
+
+	@GetMapping("download/{serialNumber}")
+	public ResponseEntity<?> download(@PathVariable String serialNumber){
+		X509Certificate certificate = certificateService.getX509BySerialNumber(serialNumber);
+		HttpHeaders headers = new HttpHeaders();
+
+		headers.add(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename ="
+				+ certificate.getSerialNumber().toString() + ".cer");
+
+		try {
+			ByteArrayResource resource =
+					new ByteArrayResource(certificate.getEncoded());
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentType(MediaType.parseMediaType("application/octet-stream"))
+					.body(resource);
+
+		}catch (CertificateEncodingException e){
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }
 

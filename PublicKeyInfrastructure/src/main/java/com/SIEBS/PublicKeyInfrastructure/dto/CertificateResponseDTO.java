@@ -59,5 +59,21 @@ public class CertificateResponseDTO {
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
 	}
+
+	public CertificateResponseDTO(BigInteger serialNumber, String issuerCN, String subjectCN, String certificateType,
+			Date validFrom, Date validTo) {
+		super();
+		this.serialNumber = serialNumber;
+		this.issuerCN = issuerCN;
+		this.subjectCN = subjectCN;
+		this.certificateType = certificateType;
+		this.validFrom = validFrom;
+		this.validTo = validTo;
+	}
+	public CertificateResponseDTO() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
     
 }
