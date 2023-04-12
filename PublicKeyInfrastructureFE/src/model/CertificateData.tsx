@@ -12,22 +12,25 @@ export class CertificateData {
     phoneNumber: String = "";
     emial: String = "";
 
-    serverAuth: boolean = true;
-    clientAuth: boolean = true;
-    codeSign: boolean = true;
-    emailProtection: boolean = true;
-    timeStamping: boolean = true;
-    ocspSigning: boolean = true;
+    serverAuth: boolean = false;
+    clientAuth: boolean = false;
+    codeSign: boolean = false;
+    emailProtection: boolean = false;
+    timeStamping: boolean = false;
+    ocspSigning: boolean = false;
 
-    digitalSignature: boolean = true;
-    nonRepudiation: boolean = true;
-    keyEnciphement: boolean = true;
-    dataEnciphement: boolean = true;
-    keyAgriment: boolean = true;
-    keyCertSign: boolean = true;
-    enhipterOnly: boolean = true;
-    decipherOnly: boolean = true;
+    digitalSignature: boolean = false;
+    nonRepudiation: boolean = false;
+    keyEnciphement: boolean = false;
+    dataEnciphement: boolean = false;
+    keyAgriment: boolean = false;
+    keyCertSign: boolean = false;
+    enhipterOnly: boolean = false;
+    decipherOnly: boolean = false;
   
+    criticalExtended: boolean = false;
+    critical: boolean = false;
+
     constructor(
       type: CertificateType,
       issuerSerialNumber: string,
@@ -54,7 +57,10 @@ export class CertificateData {
       keyAgreement: boolean,
       keyCertSign: boolean,
       enhipterOnly: boolean,
-      decipherOnly: boolean
+      decipherOnly: boolean,
+      criticalExtended: boolean,
+      critical: boolean
+
     ) {
       this.type = type;
       this.issuerSerialNumber = issuerSerialNumber;
@@ -82,6 +88,8 @@ export class CertificateData {
       this.keyCertSign = keyCertSign;
       this.enhipterOnly = enhipterOnly;
       this.decipherOnly = decipherOnly;
+      this.criticalExtended = criticalExtended;
+      this.critical = critical;
     }
   }
 export enum CertificateType{

@@ -63,7 +63,6 @@ public class CertificateService {
 		KeyPair keyPairSubject = generateKeyPair();
 		Subject subject = generateSubject(certData, keyPairSubject);
 		Issuer issuer;
-		System.out.println("kkkkkkkkkkkkkkkkkkkkkk");
 		List<org.bouncycastle.asn1.x509.Extension> extensions = findExtensionsFromRequest(certData);
 		if(certData.getType() == CertificateType.SELF_SIGNED) {
 			issuer = new Issuer(keyPairSubject.getPrivate(), keyPairSubject.getPublic(), subject.getX500Name());
@@ -186,6 +185,9 @@ public class CertificateService {
 		dto.setValidTo(x509.getNotAfter());
 		dto.setValidFrom(x509.getNotBefore());
 		dto.setSerialNumber(x509.getSerialNumber());
+		dto.setExtendedKeyUsage(x509.getExtendedKeyUsage());
+		dto.setKeyUsage(x509.getKeyUsage());
+		
 		return dto;
 	}
 
@@ -287,7 +289,7 @@ public class CertificateService {
 		if (extendedKeyUsageIds.isEmpty()==false) {
 			org.bouncycastle.asn1.x509.Extension extendedExtension = new org.bouncycastle.asn1.x509.Extension(
 					org.bouncycastle.asn1.x509.Extension.extendedKeyUsage, 
-					false, 
+					certificateRequestDTO.isCriticalExtended(),
 					new DEROctetString(new ExtendedKeyUsage(extendedKeyUsageIds.toArray(new KeyPurposeId[extendedKeyUsageIds.size()]))));
 			extensions.add(extendedExtension);
 		}
@@ -299,14 +301,13 @@ public class CertificateService {
 		    }
 		    org.bouncycastle.asn1.x509.Extension keyUsageExtension = new org.bouncycastle.asn1.x509.Extension(
 		            org.bouncycastle.asn1.x509.Extension.keyUsage, 
-		            true, 
+		            certificateRequestDTO.isCritical(), 
 		            new DEROctetString(new KeyUsage(usage)));
 		    extensions.add(keyUsageExtension);
 		}
 
 		return extensions;
 	}
-	
 	
 	
 	

@@ -32,11 +32,16 @@ const NewCertificate = () => {
   const [KEY_CERT_SIGN, setKEY_CERT_SIGN] = useState(false);
   const [ENCIPHER_ONLY, setENCIPHER_ONLY] = useState(false);
   const [DECIPHER_ONLY, setDECIPHER_ONLY] = useState(false);
+
+  const [criticalExtended, setcriticalExtended] = useState(false);
+  const [critical, setcritical] = useState(false);
   
 
 
 
   const certificate = useCurrentCertificate();
+  console.log("cet "+certificate?.extendedKeyUsage);
+  console.log("hjshjd "+certificate?.keyUsage);
 
   const navigate = useNavigate();
 
@@ -153,7 +158,16 @@ const NewCertificate = () => {
     setDECIPHER_ONLY(event.target.checked);
     console.log(event.target.checked)
   };
-  
+
+  const hendleExtendedCritical = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setcriticalExtended(event.target.checked);
+    console.log(event.target.checked);
+    
+  };
+  const hendleCritical = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setcritical(event.target.checked);
+    console.log(event.target.checked);
+  };
 
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -206,6 +220,8 @@ const NewCertificate = () => {
         "keyCertSign": KEY_CERT_SIGN,
         "enhipterOnly": ENCIPHER_ONLY,
         "decipherOnly": DECIPHER_ONLY,
+        "criticalExtended": criticalExtended,
+        "critical": critical,
       }),
     }).then(res => {
       console.log(res.text())
@@ -231,14 +247,16 @@ const NewCertificate = () => {
         <table>
           <tr>
             <td>
-            <h4>Extended key purpose</h4>
+              <h4>Extended key purpose</h4>
             </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
             <td>
-            <h4>Key purpose</h4>
+              <h4>Key purpose</h4>
             </td>
+           
+            
           </tr>
           <tr>
       <td>
@@ -307,6 +325,11 @@ const NewCertificate = () => {
     </td>
           </tr>
         </table>
+        <input type="checkbox" id="criticalExtended" checked ={criticalExtended} onChange ={hendleExtendedCritical}/>
+        <label>Extended critical</label>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="checkbox" id="critical" checked ={critical} onChange ={hendleCritical}/>
+        <label>Critical</label>
       </div>
 
       <div>

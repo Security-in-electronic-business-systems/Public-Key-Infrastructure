@@ -35,6 +35,9 @@ public class CertificateRequestDTO {
 	private boolean enhipterOnly;
 	private boolean decipherOnly;
 	
+	private boolean criticalExtended;
+	private boolean critical;
+	
 	public CertificateRequestDTO() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -263,11 +266,29 @@ public class CertificateRequestDTO {
 	public void setDecipherOnly(boolean decipherOnly) {
 		this.decipherOnly = decipherOnly;
 	}
+
+	public boolean isCriticalExtended() {
+		return criticalExtended;
+	}
+
+	public void setCriticalExtended(boolean criticalExtended) {
+		this.criticalExtended = criticalExtended;
+	}
+
+	public boolean isCritical() {
+		return critical;
+	}
+
+	public void setCritical(boolean critical) {
+		this.critical = critical;
+	}
+
 	public CertificateRequestDTO(CertificateType type, String issuer, Date validFrom, Date validTo, String o, String c,
 			String cn, String on, String name, String surname, String phoneNumber, String email, boolean serverAuth,
 			boolean clientAuth, boolean codeSign, boolean emailProtection, boolean timeStamping, boolean ocspSigning,
 			boolean digitalSignature, boolean nonRepudiation, boolean keyEnciphement, boolean dataEnciphement,
-			boolean keyAgriment, boolean keyCertSign, boolean enhipterOnly, boolean decipherOnly) {
+			boolean keyAgriment, boolean keyCertSign, boolean enhipterOnly, boolean decipherOnly,
+			boolean extendedCritical, boolean critical) {
 		super();
 		this.type = type;
 		this.issuer = issuer;
@@ -295,5 +316,7 @@ public class CertificateRequestDTO {
 		this.keyCertSign = keyCertSign;
 		this.enhipterOnly = enhipterOnly;
 		this.decipherOnly = decipherOnly;
+		this.critical = critical;
+		this.criticalExtended = extendedCritical;
 	}		
 }
