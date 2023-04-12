@@ -6,8 +6,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.Extension;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -43,7 +45,7 @@ public class CertificateGenerator {
         this.builder.setProvider("BC");
     }
     
-    public CertificateChain generateCertificate(Subject subject, Issuer issuer, Date validFrom, Date validTo) {
+    public CertificateChain generateCertificate(Subject subject, Issuer issuer, Date validFrom, Date validTo, List<org.bouncycastle.asn1.x509.Extension> extensions) {
     	try {
             ContentSigner contentSigner = builder.build(issuer.getPrivateKey());
             X509v3CertificateBuilder certificateBuilder =
@@ -54,7 +56,11 @@ public class CertificateGenerator {
                             validTo,
                             subject.getX500Name(),
                             subject.getPublicKey());
-
+            if(extensions !=null) {
+            System.out.println("EXTENSION IS NOT NULL!!!");
+            for(org.bouncycastle.asn1.x509.Extension extension : extensions)
+                certificateBuilder.addExtension(extension);
+            }
             X509CertificateHolder certificateHolder = certificateBuilder.build(contentSigner);
             JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter().setProvider("BC");
             return new CertificateChain(certificateConverter.getCertificate(certificateHolder), issuer.getPrivateKey());
