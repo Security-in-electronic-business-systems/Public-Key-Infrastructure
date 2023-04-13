@@ -217,21 +217,8 @@ const NewCertificate = () => {
     const date2 = new Date(min); 
     const date1Obj = new Date(date1);
 
-    if (date2 > date1Obj || date1Obj > max){
-      setError(`Choose date between ${minString} and ${maxString}`);
-    }else{
-      setError("");
-      const from = certificate?.validFrom ? new Date(certificate?.validFrom) : new Date();
-      const to = certificate?.validTo ? new Date(certificate?.validTo) : new Date();
-
-      const parentDuration = to.getTime() - from.getTime();
-      const childDuration = new Date(validTo).getTime() - new Date(validFrom).getTime();
-
-      if (childDuration > parentDuration/2){
-        setValidityMessage(`Maximum period of validity is ${parentDuration/2/86400000} days`);
-      }else{
-        setValidityMessage("");
-        await fetch("http://localhost:8081/api/certificate/save", {
+    if (certificateType == "Selfsigned"){
+      await fetch("http://localhost:8081/api/certificate/save", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -274,10 +261,74 @@ const NewCertificate = () => {
               navigate("/viewAll")
             }
           })
+      }else{
+       
+        if (date2 > date1Obj || date1Obj > max){
+          setError(`Choose date between ${minString} and ${maxString}`);
+        }else{
+          setError("");
+          const from = certificate?.validFrom ? new Date(certificate?.validFrom) : new Date();
+          const to = certificate?.validTo ? new Date(certificate?.validTo) : new Date();
+
+          const parentDuration = to.getTime() - from.getTime();
+          const childDuration = new Date(validTo).getTime() - new Date(validFrom).getTime();
+
+          const date1 = validTo;
+          const date1Obj = new Date(date1);
+          const date2 = validFrom;
+          const date2Obj = new Date(date1);
+
+          if (childDuration > parentDuration/2 || childDuration <= 0){
+            setValidityMessage(`Maximum period of validity is ${parentDuration/2/86400000} days`);
+          }else{
+            setValidityMessage("");
+            await fetch("http://localhost:8081/api/certificate/save", {
+              method: "POST",
+              headers: {
+                "Content-type": "application/json",
+                "Accept": "application/json",
+                'Access-Control-Allow-Origin': '*'
+              },
+              body: JSON.stringify({
+                "type": cerType,
+                "issuer": certificate?.serialNumber,
+                "validFrom": validFrom,
+                "validTo": validTo,
+                "cn": cn,
+                "o":o,
+                "on":on,
+                "c":c,
+                "name":name,
+                "surname":surname,
+                "phoneNumber":phoneNumber,
+                "email": email,
+                "serverAuth": SERVER_AUTH,
+                "clientAuth": CLIENT_AUTH,
+                "codeSign": CODE_SIGNING,
+                "emailProtection": EMAIL_PROTECTION,
+                "timeStamping": TIME_STAMPING,
+                "ocspSigning": OCSP_SIGNING,
+                "digitalSignature": DIGITAL_SIGNATURE,
+                "nonRepudiation": NON_REPUDIATION,
+                "keyEnciphement": KEY_ENCIPHERMENT,
+                "dataEnciphement": DATA_ENCIPHERMENT,
+                "keyAgriment": KEY_AGREEMENT,
+                "keyCertSign": KEY_CERT_SIGN,
+                "enhipterOnly": ENCIPHER_ONLY,
+                "decipherOnly": DECIPHER_ONLY,
+                "criticalExtended": criticalExtended,
+                "critical": critical,
+                }),
+              }).then(res => {
+                console.log(res.text())
+                if(certificate?.certificateType == "SELF_SIGNED"){
+                  navigate("/viewAll")
+                }
+              })
+          }
+        }
       }
     };
-  }
-
       
   //VRATI!
   //{certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
@@ -287,7 +338,7 @@ const NewCertificate = () => {
         <label htmlFor="certificateType">Certificate Type*</label>
         <select id="certificateType" className="form-select" value={certificateType} onChange={(e) => handleCertificateTypeChange(e)} required>
           <option value="">Select Certificate Type</option>
-          {certificate?.certificateType !== "INTERMEDIATE" && <option value="Selfsigned">Selfsigned</option>}
+          <option value="Selfsigned">Selfsigned</option>
           <option value="Intermediate">Intermediate</option>
           <option value="End entity">End Entity</option>
         </select>
@@ -478,7 +529,7 @@ const NewCertificate = () => {
       <button type="submit" className="btn btn-primary">Submit</button>
     </form>
   );
-};
+}
 
 export default NewCertificate;
 
